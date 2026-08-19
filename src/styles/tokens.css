@@ -1,0 +1,52 @@
+/**
+ * Parallax design tokens.
+ *
+ * Colour: the seven lens fills were generated in OKLCH at near-constant
+ * lightness (L* 40.7 to 50.6) and tightly banded chroma, which is what stops
+ * them reading as a rainbow. Every fill clears 3:1 against paper. Tints are
+ * derived rather than hand-picked so there is exactly one place to change a hue.
+ *
+ * The site is deliberately light only. It is printed on paper, not lit from
+ * behind, and a dark mode would undo the whole premise.
+ */
+
+:root {
+  /* Ground and ink. No pure white and no pure black anywhere. */
+  --paper: #f7f4ec;
+  --paper-sunk: #f0ece1;
+  --ink: #1a1815;
+  --ink-muted: #5c564c;
+  --ink-faint: #8a8375;
+
+  /* Rules do the dividing. Cards and shadows do not exist in this system. */
+  --rule: #d8d2c4;
+  --rule-heavy: #1a1815;
+
+  /* Lens fills, keyed to RegionCode in src/lib/lenses.ts. */
+  --lens-1: #8f7532; /* philosophy            ochre  */
+  --lens-2: #944b40; /* politics              brick  */
+  --lens-3: #8e5e3b; /* philosophy + politics russet */
+  --lens-4: #3a6799; /* economics             ink blue */
+  --lens-5: #44763e; /* philosophy + economics moss  */
+  --lens-6: #78538e; /* politics + economics  aubergine */
+  --lens-7: #3f362f; /* all three             umber  */
+
+  /* Unclaimed map cells. 22% holds the region shape without competing with a
+     filled cell, and keeps the seven regions distinguishable from each other. */
+  --lens-1-tint: color-mix(in srgb, var(--lens-1) 22%, var(--paper));
+  --lens-2-tint: color-mix(in srgb, var(--lens-2) 22%, var(--paper));
+  --lens-3-tint: color-mix(in srgb, var(--lens-3) 22%, var(--paper));
+  --lens-4-tint: color-mix(in srgb, var(--lens-4) 22%, var(--paper));
+  --lens-5-tint: color-mix(in srgb, var(--lens-5) 22%, var(--paper));
+  --lens-6-tint: color-mix(in srgb, var(--lens-6) 22%, var(--paper));
+  --lens-7-tint: color-mix(in srgb, var(--lens-7) 22%, var(--paper));
+
+  /* Keyline around every map cell. Newspaper charts outline their colour
+     blocks, and it carries the separation that near-equal lightness cannot. */
+  --cell-keyline: rgb(26 24 21 / 0.22);
+
+  /* Measure. Body copy is capped near 68 characters. */
+  --measure: 34rem;
+  --measure-wide: 46rem;
+  --page: 72rem;
+}
