@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatDate, type Article } from "@/lib/content";
+import { Cover } from "@/components/Cover";
 import { LensTag } from "@/components/LensPixel";
 
 type Variant = "lead" | "secondary" | "river";
@@ -23,6 +24,17 @@ export function ArticleCard({
 }) {
   return (
     <article className="flex flex-col">
+      {variant !== "river" && (
+        <Link
+          href={`/article/${article.slug}`}
+          className="mb-4 block"
+          tabIndex={-1}
+          aria-hidden="true"
+        >
+          <Cover article={article} priority={variant === "lead"} />
+        </Link>
+      )}
+
       <LensTag lenses={article.lenses} size={variant === "lead" ? "md" : "sm"} />
 
       <h3 className={`font-display mt-2 font-semibold ${HEADLINE[variant]}`}>

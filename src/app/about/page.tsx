@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ALL_REGIONS } from "@/lib/lenses";
+import { DISPLAY_REGIONS } from "@/lib/lenses";
+import { formatEditorTitle, type EditorTitle } from "@/lib/editorial";
 import { LensPixel } from "@/components/LensPixel";
 import { authors } from "@/content/authors";
 import { site } from "@/lib/site";
@@ -10,17 +11,29 @@ export const metadata: Metadata = {
   description: site.description,
 };
 
+/** Founding editor first, then seniors, then juniors, then guests. */
+const RANK_ORDER: Record<EditorTitle["rank"], number> = {
+  founding: 0,
+  senior: 1,
+  junior: 2,
+  guest: 3,
+};
+
 export default function AboutPage() {
+  const masthead = Object.values(authors).sort(
+    (a, b) => RANK_ORDER[a.title.rank] - RANK_ORDER[b.title.rank] || a.name.localeCompare(b.name),
+  );
+
   return (
     <div className="mx-auto w-full max-w-(--page) px-5 py-10">
       <header className="border-ink mx-auto max-w-(--measure) border-b-2 pb-6 text-center">
-        <h1 className="font-display text-4xl font-semibold sm:text-5xl">About Parallax</h1>
+        <h1 className="font-display text-4xl font-semibold sm:text-5xl">About The Parallaxer</h1>
         <p className="text-ink-muted mt-4 text-xl leading-relaxed">{site.statement}</p>
       </header>
 
       <div className="mx-auto mt-10 max-w-(--measure)">
         <p className="mt-6">
-          Parallax is the apparent shift in an object when you view it from a different position.
+          A parallax is the apparent shift in an object when you view it from a different position.
           Nothing about the object changes. What changes is where you are standing, and that turns
           out to be enough to tell you something you could not otherwise measure.
         </p>
@@ -42,7 +55,7 @@ export default function AboutPage() {
         </p>
 
         <ul className="divide-rule border-rule mt-8 divide-y border-t border-b">
-          {ALL_REGIONS.map((region) => (
+          {DISPLAY_REGIONS.map((region) => (
             <li key={region.code} className="flex items-center gap-3 py-3">
               <LensPixel lenses={region.lenses} size="lg" />
               <span className="label text-ink-muted w-28 shrink-0">{region.short}</span>
@@ -53,20 +66,27 @@ export default function AboutPage() {
 
         <h2 className="mt-12 text-2xl">The masthead</h2>
         <p className="mt-6">
-          Parallax is edited by a small group. Each editor keeps a profile with their work and the
-          lenses they write through most often.
+          The Parallaxer is edited by a small group. There are seven beats, one for each region of
+          the map: the three single lenses, the three pairs, and the centre where all three meet.
+          Each beat has a senior editor, appointed by the publication, and may have junior editors
+          writing alongside them.
+        </p>
+        <p className="mt-6">
+          Guest contributors are not on the masthead but keep a profile and a byline. A first and
+          second piece run as guest articles. After a second, a contributor may apply for a junior
+          editorship. Senior editorships are not applied for.
         </p>
       </div>
 
       <ul className="mx-auto mt-8 grid max-w-(--measure-wide) gap-x-10 gap-y-8 sm:grid-cols-2">
-        {Object.values(authors).map((author) => (
+        {masthead.map((author) => (
           <li key={author.id} className="border-rule border-t pt-4">
             <h3 className="font-display text-xl font-semibold">
               <Link href={`/by/${author.slug}`} className="underline-offset-4 hover:underline">
                 {author.name}
               </Link>
             </h3>
-            <p className="label text-ink-faint mt-1">{author.title}</p>
+            <p className="label text-ink-faint mt-1">{formatEditorTitle(author.title)}</p>
             <p className="text-ink-muted mt-2 text-base leading-relaxed">{author.bio}</p>
           </li>
         ))}
@@ -75,8 +95,8 @@ export default function AboutPage() {
       <div className="border-rule mx-auto mt-12 max-w-(--measure) border-t pt-6">
         <h2 className="text-2xl">Write for us</h2>
         <p className="mt-4">
-          Parallax accepts guest articles, and actively wants them. If you have an argument that
-          needs more than one discipline to make, see the{" "}
+          The Parallaxer accepts guest articles, and actively wants them. If you have an argument
+          that needs more than one discipline to make, see the{" "}
           <Link href="/submit" className="underline underline-offset-2">
             submission page
           </Link>

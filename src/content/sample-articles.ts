@@ -26,6 +26,7 @@ const drafts: Draft[] = [
     publishedAt: "2026-03-04T09:00:00.000Z",
     author: authors.hale!,
     coverImage: null,
+    coverAlt: null,
     coverCredit: null,
     body: doc(
       p(
@@ -69,6 +70,7 @@ const drafts: Draft[] = [
     publishedAt: "2026-04-18T09:00:00.000Z",
     author: authors.hale!,
     coverImage: null,
+    coverAlt: null,
     coverCredit: null,
     body: doc(
       p(
@@ -107,6 +109,7 @@ const drafts: Draft[] = [
     publishedAt: "2026-02-11T09:00:00.000Z",
     author: authors.lindqvist!,
     coverImage: null,
+    coverAlt: null,
     coverCredit: null,
     body: doc(
       p(
@@ -140,6 +143,7 @@ const drafts: Draft[] = [
     publishedAt: "2026-05-22T09:00:00.000Z",
     author: authors.lindqvist!,
     coverImage: null,
+    coverAlt: null,
     coverCredit: null,
     body: doc(
       p(
@@ -173,6 +177,7 @@ const drafts: Draft[] = [
     publishedAt: "2026-01-28T09:00:00.000Z",
     author: authors.roda!,
     coverImage: null,
+    coverAlt: null,
     coverCredit: null,
     body: doc(
       p(
@@ -214,6 +219,7 @@ const drafts: Draft[] = [
     publishedAt: "2026-03-19T09:00:00.000Z",
     author: authors.okonjo!,
     coverImage: null,
+    coverAlt: null,
     coverCredit: null,
     body: doc(
       p(
@@ -252,6 +258,7 @@ const drafts: Draft[] = [
     publishedAt: "2026-06-09T09:00:00.000Z",
     author: authors.okonjo!,
     coverImage: null,
+    coverAlt: null,
     coverCredit: null,
     body: doc(
       p(
@@ -285,6 +292,7 @@ const drafts: Draft[] = [
     publishedAt: "2026-04-02T09:00:00.000Z",
     author: authors.roda!,
     coverImage: null,
+    coverAlt: null,
     coverCredit: null,
     body: doc(
       p(
@@ -325,6 +333,7 @@ const drafts: Draft[] = [
     publishedAt: "2026-05-07T09:00:00.000Z",
     author: authors.okonjo!,
     coverImage: null,
+    coverAlt: null,
     coverCredit: null,
     body: doc(
       p(
@@ -363,6 +372,7 @@ const drafts: Draft[] = [
     publishedAt: "2026-06-24T09:00:00.000Z",
     author: authors.roda!,
     coverImage: null,
+    coverAlt: null,
     coverCredit: null,
     body: doc(
       p(

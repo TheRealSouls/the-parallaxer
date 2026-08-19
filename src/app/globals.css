@@ -62,6 +62,62 @@
     line-height: 1.2;
   }
 
+  /* The editor surface, matched to the published article so drafting looks like
+     reading. Scoped to the Tiptap root rather than applied globally. */
+  .prose-article :where(p) {
+    margin-top: 1.5rem;
+  }
+  .prose-article :where(p:first-child) {
+    margin-top: 0;
+  }
+  .prose-article :where(h2) {
+    margin-top: 2.75rem;
+    font-size: 1.5rem;
+  }
+  .prose-article :where(h3) {
+    margin-top: 2.25rem;
+    font-size: 1.25rem;
+  }
+  .prose-article :where(blockquote) {
+    margin: 2.25rem 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 1.25rem 0;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    line-height: 1.25;
+    font-weight: 500;
+  }
+  .prose-article :where(ul, ol) {
+    margin-top: 1.5rem;
+    padding-left: 1.5rem;
+  }
+  .prose-article :where(ul) {
+    list-style: disc;
+  }
+  .prose-article :where(ol) {
+    list-style: decimal;
+  }
+  .prose-article :where(li) {
+    margin-top: 0.5rem;
+  }
+  .prose-article :where(hr) {
+    margin: 2.5rem 0;
+    border: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .prose-article :where(a) {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose-article :where(p.is-editor-empty:first-child)::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
+
   .rule-hair {
     border-top: 1px solid var(--rule);
   }

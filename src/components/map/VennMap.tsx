@@ -1,7 +1,8 @@
-import { ALL_REGIONS, REGIONS, toRegionCode, type RegionCode } from "@/lib/lenses";
+import { DISPLAY_REGIONS, REGIONS, toRegionCode, type RegionCode } from "@/lib/lenses";
 import { formatDate, type Article } from "@/lib/content";
 import { LensPixel } from "@/components/LensPixel";
 import { buildGrid, labelAnchors } from "./venn-geometry";
+import { LENS_ICON } from "./lens-icons";
 import { VennMapCanvas, type MapEntry } from "./VennMapCanvas";
 
 /**
@@ -73,14 +74,19 @@ export function VennMap({ articles }: { articles: readonly Article[] }) {
       <div className="mt-6">
         <VennMapCanvas
           entries={entries}
-          labels={labelAnchors().map((l) => ({ lens: l.lens, x: l.x, y: l.y }))}
+          labels={labelAnchors().map((l) => ({
+            lens: l.lens,
+            x: l.x,
+            y: l.y,
+            icon: LENS_ICON[l.lens],
+          }))}
           viewBox={grid.viewBox}
           hint="Each square is one article. Point at a square to read its headline."
         />
       </div>
 
       <ul className="border-rule mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2 border-t pt-4">
-        {ALL_REGIONS.map((region) => {
+        {DISPLAY_REGIONS.map((region) => {
           const n = counts.get(region.code) ?? 0;
           return (
             <li key={region.code} className="label text-ink-muted flex items-center gap-1.5">

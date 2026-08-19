@@ -1,6 +1,14 @@
 import type { BlockNode, Doc, ListItemNode, TextNode } from "@/lib/content";
 
 /**
+ * Bodies are sanitised before they are stored, but this is the last point before
+ * a string becomes an href attribute, and a `javascript:` URL here would be a
+ * cross-site scripting hole. Checking in both places costs nothing and means
+ * neither one is the single thing standing between a draft and an exploit.
+ */
+const SAFE_HREF = /^(https?:\/\/|mailto:|\/)/i;
+
+/**
  * Renders Tiptap document JSON.
  *
  * The sample content in Stage 1 and the output of the Stage 3 editor are the
@@ -102,7 +110,7 @@ function Inline({ content }: { content: readonly TextNode[] }) {
         for (const mark of node.marks ?? []) {
           if (mark.type === "bold") element = <strong>{element}</strong>;
           if (mark.type === "italic") element = <em>{element}</em>;
-          if (mark.type === "link" && mark.attrs) {
+          if (mark.type === "link" && mark.attrs && SAFE_HREF.test(mark.attrs.href)) {
             element = (
               <a
                 href={mark.attrs.href}

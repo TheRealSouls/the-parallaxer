@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/ArticleCard";
 import { authors } from "@/content/authors";
+import { describeEditorTitle, formatEditorTitle } from "@/lib/editorial";
 import { getArticlesByAuthor } from "@/content/sample-articles";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -32,7 +33,8 @@ export default async function AuthorPage({ params }: Params) {
     <div className="mx-auto w-full max-w-(--page) px-5 py-10">
       <header className="border-ink mx-auto max-w-(--measure) border-b-2 pb-6 text-center">
         <h1 className="font-display text-4xl font-semibold sm:text-5xl">{author.name}</h1>
-        <p className="label text-ink-faint mt-2">{author.title}</p>
+        <p className="label text-ink-faint mt-2">{formatEditorTitle(author.title)}</p>
+        <p className="text-ink-muted mt-1 text-sm">{describeEditorTitle(author.title)}</p>
         <p className="text-ink-muted mt-4 text-lg leading-relaxed">{author.bio}</p>
 
         {author.links.length > 0 && (

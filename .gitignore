@@ -42,3 +42,12 @@ next-env.d.ts
 
 # Keep the documented template; real .env files stay ignored above.
 !.env.example
+
+/src/generated/prisma
+
+# Prisma generates TypeScript client sources here on every `prisma generate`.
+/src/generated
+
+# The favicon set has been copied into src/app and public; the extracted folder
+# is just the unpacked zip.
+/src/media/favicon_unzipped

@@ -1,5 +1,5 @@
 /**
- * Content types for Parallax.
+ * Content types for The Parallaxer.
  *
  * These mirror the Prisma models planned for Stage 2 exactly, and the article
  * body is stored as Tiptap document JSON rather than a bespoke block format.
@@ -8,6 +8,7 @@
  * database queries touches no component.
  */
 
+import type { EditorTitle } from "@/lib/editorial";
 import type { Lens } from "@/lib/lenses";
 
 export type ArticleStatus = "draft" | "in_review" | "published" | "archived";
@@ -23,9 +24,10 @@ export type Author = {
   id: string;
   slug: string;
   name: string;
+  /** What the account may do. Distinct from the masthead title below. */
   role: UserRole;
-  /** One line under the byline on the article page. */
-  title: string;
+  /** Editorial position, printed under the byline. See lib/editorial.ts. */
+  title: EditorTitle;
   bio: string;
   image: string | null;
   links: readonly ProfileLink[];
@@ -74,7 +76,10 @@ export type Article = {
   publishedAt: string;
   author: Author;
   readingMinutes: number;
+  /** An uploaded cover. Null means the generated cover art is used instead. */
   coverImage: string | null;
+  /** Required whenever coverImage is set. Stage 3 enforces this in the editor. */
+  coverAlt: string | null;
   coverCredit: string | null;
 };
 

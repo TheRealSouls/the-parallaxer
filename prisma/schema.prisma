@@ -1,0 +1,269 @@
+// The Parallaxer database schema.
+//
+// Under Prisma 7 the datasource URL lives in prisma.config.ts rather than here,
+// and the client is generated into src/generated/prisma.
+//
+// The four auth tables (User, Session, Account, Verification) are Better Auth's
+// required shape. Fields may be added to User, but the existing ones must keep
+// their names and types or sign-in breaks.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// What an account is permitted to do. Distinct from the masthead title below:
+/// a guest contributor has a byline and a profile but only reader permissions.
+enum UserRole {
+  reader
+  editor
+  admin
+}
+
+/// Masthead position. See src/lib/editorial.ts, which is the source of truth for
+/// how these combine with a beat to form a printed title.
+enum EditorRank {
+  founding
+  senior
+  junior
+  guest
+}
+
+enum ArticleStatus {
+  draft
+  in_review
+  published
+  archived
+}
+
+enum CommentStatus {
+  visible
+  hidden
+  deleted
+}
+
+/// Whether an article is readable by anyone or only by members. Members-only
+/// publishing is not built yet; the column exists so the reader, the queries,
+/// and the map do not need reshaping when it is.
+enum ArticleVisibility {
+  public
+  members
+}
+
+/// The three lenses. An article carries one, two, or all three, and the
+/// combination determines its colour and its region on the map.
+enum Lens {
+  philosophy
+  politics
+  economics
+}
+
+model User {
+  // --- Better Auth core fields. Do not rename. ---
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // --- The Parallaxer's own fields. ---
+  role UserRole @default(reader)
+
+  /// Null until the person first publishes, at which point they become a guest.
+  rank EditorRank?
+
+  /// Which of the seven regions this editor covers, 1 to 7, matching RegionCode
+  /// in src/lib/lenses.ts. Set for senior and junior editors, null otherwise.
+  beat Int?
+
+  /// The account's public identity, chosen at sign-up and not changeable
+  /// afterwards. Distinct from `name`, which Better Auth requires and which is
+  /// only ever a copy of this. Everything reader-facing shows the nickname.
+  nickname String? @unique
+
+  /// URL segment for the public profile at /by/[slug]. Null for plain readers,
+  /// who have no profile page.
+  slug String? @unique
+
+  bio String?
+
+  /// Array of { label, url }. Rendered with rel="nofollow" on the profile.
+  links Json?
+
+  /// Set while a paid membership is active. Null means no membership. Nothing
+  /// reads this yet.
+  membershipUntil DateTime?
+
+  sessions  Session[]
+  accounts  Account[]
+  articles  Article[]
+  revisions Revision[]
+  comments  Comment[]
+  likes     Like[]
+
+  @@index([role])
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model Article {
+  id      String @id @default(cuid())
+  slug    String @unique
+  kicker  String
+  title   String
+  dek     String
+  excerpt String
+
+  /// Tiptap document JSON. The same shape the Stage 1 sample content uses, so
+  /// the renderer in src/components/ArticleBody.tsx needs no changes.
+  body Json
+
+  /// One, two, or all three. Queried with `lenses: { has: "philosophy" }`.
+  lenses Lens[]
+
+  status      ArticleStatus     @default(draft)
+  visibility  ArticleVisibility @default(public)
+  publishedAt DateTime?
+
+  /// Running total of views, denormalised from ArticleViewDay so the front page
+  /// and the studio can sort by it without aggregating on every request.
+  viewCount Int @default(0)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  readingMinutes Int @default(1)
+
+  /// Which square on the front page map this article occupies. Assigned at
+  /// publish and never changed, so an article does not move once placed. Unique
+  /// because a square holds exactly one article until the map switches to
+  /// density mode.
+  mapCell Int? @unique
+
+  /// Null means the generated cover art is used. See src/components/CoverArt.tsx.
+  coverImage  String?
+  coverAlt    String?
+  coverCredit String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  revisions Revision[]
+  comments  Comment[]
+  likes     Like[]
+  viewDays  ArticleViewDay[]
+
+  @@index([status, publishedAt])
+  @@index([authorId, status])
+}
+
+/// One row per article per day.
+///
+/// Deliberately holds no IP address, user agent, referrer, or user id: it is a
+/// count and a date and nothing else. That keeps the promise in the privacy
+/// policy that we run no analytics identifying anyone individually, and it means
+/// a year of daily traffic for a hundred articles is a few tens of thousands of
+/// tiny rows rather than a log to manage.
+model ArticleViewDay {
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  day       DateTime @db.Date
+  count     Int      @default(0)
+
+  @@id([articleId, day])
+  @@index([day])
+}
+
+model Revision {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  body      Json
+  editorId  String
+  editor    User     @relation(fields: [editorId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([articleId, createdAt])
+}
+
+model Comment {
+  id        String  @id @default(cuid())
+  articleId String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  /// Threads are one level deep. A reply points at a top-level comment, and a
+  /// reply to a reply is not possible.
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
+
+  body   String
+  status CommentStatus @default(visible)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([articleId, createdAt])
+  @@index([parentId])
+}
+
+model Like {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, articleId])
+  @@index([articleId])
+}

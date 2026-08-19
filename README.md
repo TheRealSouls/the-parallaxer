@@ -1,10 +1,10 @@
-# Parallax
+# The Parallaxer
 
 A philosophy, politics, and economics publication.
 
-Parallax is the apparent shift in an object when you view it from a different position. Nothing about the object changes; what changes is where you stand. This site treats that as a method: every article is read through one, two, or all three lenses, and its colour is the mix of those lenses.
+A parallax is the apparent shift in an object when you view it from a different position. Nothing about the object changes; what changes is where you stand. This site treats that as a method: every article is read through one, two, or all three lenses, and its colour is the mix of those lenses.
 
-Stage 1 is complete. The site runs from a typed sample array with no database and no login.
+Stage 1 is complete. Stage 2 is scaffolded: the schema, authentication, access guards, and query layer exist, but nothing is connected to a live database yet. The public site still renders from the typed sample array.
 
 ## Running it
 
@@ -82,32 +82,101 @@ When the archive outgrows the grid the component switches to density mode, where
 - No pure white and no pure black anywhere.
 - Light only. The site is printed on paper, not lit from behind.
 
+## Covers
+
+Every article has a cover. Uploaded images take precedence; when there is none, `src/components/CoverArt.tsx` draws one deterministically from the slug, in tints of the article's own lens colour. Stock photography was rejected deliberately: it is generic, needs licensing, and carries none of the colour information the rest of the site runs on. A generated cover states the article's region before a word is read, and the same slug always produces the same picture.
+
+## The masthead
+
+`src/lib/editorial.ts` is the source of truth. A title is a rank plus a beat, and the seven beats are the seven regions of the map.
+
+- **Founding Editor**, no beat.
+- **Senior [beat] Editor**, one per beat, appointed by the publication.
+- **Junior [beat] Editor**, applied for.
+- **Guest Article**, for contributors who have not joined the masthead.
+
+A contributor's first two accepted pieces run as guest articles. After the second they may apply for a junior editorship. `MIN_ARTICLES_FOR_JUNIOR` sets that threshold in one place, and the terms page and submission page both read it, so changing the number changes the site and the contract together.
+
+Rank is separate from permission. `role` (reader, editor, admin) decides what an account may do; the title is the position printed under a byline. A guest contributor has reader permissions, a byline, and a profile.
+
+## Stage 2: database and accounts
+
+Scaffolded but not yet connected. Nothing on the public site reads from the database.
+
+- `prisma/schema.prisma` covers users, sessions, articles, revisions, comments, and likes. The four auth tables are Better Auth's required shape and their fields must not be renamed.
+- `src/lib/auth.ts` configures email/password and Google. Google only appears when credentials exist, so the site runs without them.
+- `src/lib/auth-guards.ts` holds every access check. Guards re-read the session server side on each call and never trust a client-supplied role.
+- `src/proxy.ts` bounces signed-out visitors away from `/studio` and `/admin`. It only checks that a session cookie exists and is **not** the access check; the guards are.
+- `src/lib/queries/` mirrors the Stage 1 function names, so migrating a page is a change of import.
+
+To bring it up:
+
+```bash
+cp .env.example .env
+```
+
+Fill in `DATABASE_URL` from Neon and generate `BETTER_AUTH_SECRET`, then:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+The first account created with the `ADMIN_EMAIL` address becomes admin and founding editor. Everyone else signs up as a reader.
+
+Still to build in Stage 2: switching the public pages from `src/content/` to `src/lib/queries/`.
+
+Accounts are email and password only. Google sign-in is written but held behind `ENABLE_GOOGLE` in `src/lib/auth.ts`, so it cannot appear before it is wanted. Signing up requires confirming the address; a nickname is chosen at sign-up and is fixed afterwards.
+
+## Stage 3: the editorial studio
+
+Also scaffolded, also unrun against a live database.
+
+- `/studio` lists what you may work on and shows how full each region of the map is.
+- `/studio/write/[id]` is the writing surface: Tiptap with a deliberately narrow feature set, autosaving on a debounce, with the lens selector previewing the colour the article will take.
+- `/studio/preview/[id]` renders a draft through the real article template rather than an approximation.
+- `/admin` sets roles and masthead titles.
+
+Two rules worth keeping. Every server action re-checks the session and ownership, because a server action is a public endpoint regardless of which page renders the form that calls it. And article bodies are rebuilt from scratch by `src/lib/tiptap-doc.ts` before being stored, rather than trusted: an unrecognised node is dropped, and a link whose href is not plainly http, mailto, or an internal path loses its link.
+
+## Measuring what readers do
+
+Views are counted from the browser by `ViewBeacon`, not during the server render. That is the whole reason the article pages are still static: incrementing a counter while rendering would make every one of them dynamic.
+
+`ArticleViewDay` stores an article id, a date, and a count. No IP address, no user agent, no user id. That keeps the promise made in the privacy policy, and it means a year of traffic is a handful of tiny rows rather than a log to manage. Comment and like totals come from the same database, so the studio shows reach and engagement without a third-party analytics account.
+
 ## Before this goes live
 
-- Fill in every bracketed placeholder in `src/app/terms/page.tsx` and `src/app/privacy/page.tsx`, and have both reviewed by someone qualified. Google requires working links to them on the OAuth consent screen in Stage 2.
-- Replace `submissionFormUrl` in `src/lib/site.ts` with the real Google Form.
+- Have the terms and privacy pages reviewed by someone qualified. They are written by a non-lawyer.
+- Both need a postal address before Stage 6 adds advertising, because Irish e-commerce rules require one of a commercial service.
 - Replace or delete every placeholder editor in `src/content/authors.ts`.
-- Set `url` in `src/lib/site.ts` to the real domain.
+- Point the domain at the deployment and set `BETTER_AUTH_URL` to it.
 
 ## Layout of the source
 
 ```
 src/
-  app/                     routes
+  app/                     routes, including /sign-in and the auth handler
   components/
     map/                   venn-geometry.ts, VennMap.tsx, VennMapCanvas.tsx
     ArticleBody.tsx        renders Tiptap JSON
     ArticleCard.tsx        lead / secondary / river variants
+    CoverArt.tsx           generated covers
     FrontPage.tsx          the newspaper grid
-  content/                 sample articles and authors, deleted in Stage 2
+  content/                 sample articles and authors, deleted once Stage 2 lands
   lib/
     lenses.ts              the colour system
+    editorial.ts           the masthead taxonomy
     content.ts             content types and authoring helpers
+    auth.ts, auth-guards.ts, db.ts
+    queries/               database reads
   styles/tokens.css        design tokens
+prisma/schema.prisma
 ```
-
-`src/content/sample-articles.ts` exports `getPublishedArticles`, `getArticleBySlug`, and `getArticlesByAuthor`. Those three functions are the seam with Stage 2: they move to `src/lib/queries/` with identical signatures, and no component that calls them changes.
 
 ## What comes next
 
-Stage 2 adds Neon Postgres, Prisma, and Better Auth with Google sign-in and reader/editor/admin roles. Stage 3 adds the Tiptap editing studio. Stage 4 adds comments, likes, and editor profiles. Stage 5 is SEO, feeds, and the newsletter. Stage 6 is monetisation.
+Stage 3 adds the Tiptap editing studio. Stage 4 adds comments, likes, and full editor profiles. Stage 5 is SEO, feeds, and the newsletter. Stage 6 is monetisation, which is also when the legal pages need revisiting.
+
+## Known advisory
+
+`npm audit` reports a high-severity issue in `deepmerge-ts`, reached through the Prisma CLI's config loader. It is a build-time dependency, is not shipped to the browser or the server bundle, and is only fed our own `prisma.config.ts`. The offered fix downgrades Prisma to 6, a major version back, so it has been left alone deliberately.

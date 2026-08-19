@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Newsreader, Source_Serif_4, Archivo_Narrow } from "next/font/google";
 import { Masthead } from "@/components/Masthead";
 import { Footer } from "@/components/Footer";
@@ -52,6 +53,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
+
+        {/*
+          Font Awesome kit, for icons used in page copy. The three lens glyphs on
+          the map do not come from here: they are inlined into the server-rendered
+          SVG so the front page never flashes without them. Loaded after
+          hydration so it cannot block first paint.
+        */}
+        <Script
+          src="https://kit.fontawesome.com/d24d18c78a.js"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

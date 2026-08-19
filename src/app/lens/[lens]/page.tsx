@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!isLens(lens)) return {};
   return {
     title: lensName(lens),
-    description: `Every Parallax article read wholly or partly through the ${lens} lens.`,
+    description: `Every Parallaxer article read wholly or partly through the ${lens} lens.`,
   };
 }
 

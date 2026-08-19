@@ -9,19 +9,33 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@fortawesome/free-solid-svg-icons": "^7.3.1",
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "@tiptap/extension-link": "^3.30.2",
+    "@tiptap/extension-placeholder": "^3.30.2",
+    "@tiptap/pm": "^3.30.2",
+    "@tiptap/react": "^3.30.2",
+    "@tiptap/starter-kit": "^3.30.2",
+    "better-auth": "^1.7.1",
     "next": "16.3.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "resend": "^6.20.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "prisma": "^7.9.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

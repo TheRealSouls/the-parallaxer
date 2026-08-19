@@ -1,5 +1,5 @@
 /**
- * The single source of truth for the Parallax colour system.
+ * The single source of truth for The Parallaxer colour system.
  *
  * Three lenses behave as subtractive primaries. An article carries one, two, or
  * all three of them, and the resulting region colour is the mix: yellow and red
@@ -109,6 +109,16 @@ export const ALL_REGIONS: readonly Region[] = [1, 2, 3, 4, 5, 6, 7].map(
   (c) => REGIONS[c as RegionCode],
 );
 
+/**
+ * Reading order for anywhere the seven regions are listed: the three lenses on
+ * their own first, then the three pairs, then the centre. This is the order the
+ * publication is explained in, so the map key and the about page follow it
+ * rather than the numeric order of the bitmask.
+ */
+export const DISPLAY_REGIONS: readonly Region[] = [1, 2, 4, 3, 5, 6, 7].map(
+  (c) => REGIONS[c as RegionCode],
+);
+
 /** Collapse a set of lenses into its region code. */
 export function toRegionCode(lenses: readonly Lens[]): RegionCode {
   const code = lenses.reduce((acc, l) => acc | LENS_BIT[l], 0);
@@ -132,6 +142,11 @@ export function regionsWithLens(lens: Lens): readonly Region[] {
   return ALL_REGIONS.filter((r) => (r.code & LENS_BIT[lens]) !== 0);
 }
 
+/** Narrows an arbitrary number, e.g. a database column, to a valid region. */
+export function isRegionCode(value: number | null | undefined): value is RegionCode {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 7;
+}
+
 export function isLens(value: string): value is Lens {
   return (LENSES as readonly string[]).includes(value);
 }
@@ -139,4 +154,25 @@ export function isLens(value: string): value is Lens {
 /** Title case for a single lens, e.g. "philosophy" to "Philosophy". */
 export function lensName(lens: Lens): string {
   return lens.charAt(0).toUpperCase() + lens.slice(1);
+}
+
+/** The paper ground, duplicated from tokens.css so tints can be computed in JS. */
+export const PAPER_HEX = "#F7F4EC";
+
+/**
+ * Mix a lens colour toward paper. `amount` is how much of the lens colour
+ * survives, so 1 returns the colour untouched and 0 returns bare paper.
+ *
+ * Used by the generated cover art, which needs concrete hex values rather than
+ * CSS color-mix so the same colours can be reused server side for share images.
+ */
+export function tintTowardPaper(hex: string, amount: number): string {
+  const parse = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [r, g, b] = parse(hex);
+  const [pr, pg, pb] = parse(PAPER_HEX);
+  const mix = (a: number, p: number) => Math.round(a * amount + p * (1 - amount));
+  return (
+    "#" +
+    [mix(r!, pr!), mix(g!, pg!), mix(b!, pb!)].map((v) => v.toString(16).padStart(2, "0")).join("")
+  );
 }

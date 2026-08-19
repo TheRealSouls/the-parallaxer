@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArticleBody } from "@/components/ArticleBody";
+import { Cover, CoverCredit } from "@/components/Cover";
+import { ViewBeacon } from "@/components/ViewBeacon";
 import { ArticleCard } from "@/components/ArticleCard";
 import { LensTag } from "@/components/LensPixel";
 import { formatDate } from "@/lib/content";
+import { formatEditorTitle } from "@/lib/editorial";
 import { regionOf, toRegionCode } from "@/lib/lenses";
 import { getArticleBySlug, getPublishedArticles, sampleArticles } from "@/content/sample-articles";
 
@@ -43,6 +46,8 @@ export default async function ArticlePage({ params }: Params) {
 
   return (
     <div className="mx-auto w-full max-w-(--page) px-5 py-10">
+      <ViewBeacon slug={article.slug} />
+
       <article>
         <header className="mx-auto w-full max-w-(--measure-wide) text-center">
           <p className="label text-ink-faint">{article.kicker}</p>
@@ -82,7 +87,12 @@ export default async function ArticlePage({ params }: Params) {
           </div>
         </header>
 
-        <div className="mt-10">
+        <figure className="mx-auto mt-10 w-full max-w-(--measure-wide)">
+          <Cover article={article} priority />
+          <CoverCredit article={article} />
+        </figure>
+
+        <div className="mt-12">
           <ArticleBody body={article.body} />
         </div>
       </article>
@@ -99,7 +109,7 @@ export default async function ArticlePage({ params }: Params) {
             {article.author.name}
           </Link>
         </p>
-        <p className="label text-ink-faint mt-1">{article.author.title}</p>
+        <p className="label text-ink-faint mt-1">{formatEditorTitle(article.author.title)}</p>
         <p className="text-ink-muted mt-2 text-base leading-relaxed">{article.author.bio}</p>
       </section>
 

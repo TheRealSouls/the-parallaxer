@@ -1,5 +1,5 @@
 /**
- * Grid mathematics for the Parallax map.
+ * Grid mathematics for The Parallaxer map.
  *
  * Three equal circles sit on the vertices of an equilateral triangle whose side
  * equals their radius. That spacing is what guarantees all three pairwise
