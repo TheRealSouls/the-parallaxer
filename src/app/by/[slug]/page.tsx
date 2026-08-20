@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/ArticleCard";
+import { Avatar } from "@/components/Avatar";
+import { VennMap } from "@/components/map/VennMap";
 import { authors } from "@/content/authors";
 import { describeEditorTitle, formatEditorTitle } from "@/lib/editorial";
 import { getArticlesByAuthor } from "@/content/sample-articles";
@@ -32,6 +34,7 @@ export default async function AuthorPage({ params }: Params) {
   return (
     <div className="mx-auto w-full max-w-(--page) px-5 py-10">
       <header className="border-ink mx-auto max-w-(--measure) border-b-2 pb-6 text-center">
+        <Avatar author={author} size="lg" className="mx-auto mb-5" />
         <h1 className="font-display text-4xl font-semibold sm:text-5xl">{author.name}</h1>
         <p className="label text-ink-faint mt-2">{formatEditorTitle(author.title)}</p>
         <p className="text-ink-muted mt-1 text-sm">{describeEditorTitle(author.title)}</p>
@@ -54,7 +57,15 @@ export default async function AuthorPage({ params }: Params) {
         )}
       </header>
 
-      <h2 className="label text-ink-faint mt-8">
+      {articles.length > 0 && (
+        <div className="mt-12">
+          {/* The same diagram as the front page, filled only with this writer's
+              work, so a profile shows at a glance which lenses they reach for. */}
+          <VennMap articles={articles} heading="Their field" />
+        </div>
+      )}
+
+      <h2 className="label text-ink-faint mt-14">
         {articles.length} {articles.length === 1 ? "article" : "articles"}
       </h2>
 

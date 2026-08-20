@@ -1,7 +1,9 @@
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
+import { PASSWORD_MIN, validatePassword } from "@/lib/password";
 import { site } from "@/lib/site";
 
 /**
@@ -48,9 +50,31 @@ export const auth = betterAuth({
 
   database: prismaAdapter(prisma, { provider: "postgresql" }),
 
+  /**
+   * Enforces the password rules server side.
+   *
+   * The forms check the same rules for immediate feedback, but that is a
+   * courtesy: these endpoints are reachable directly, so the rule that actually
+   * holds is this one. Better Auth enforces the length floor by itself; the
+   * composition rule is ours.
+   */
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      const guarded = ["/sign-up/email", "/reset-password", "/change-password"];
+      if (!guarded.some((path) => ctx.path.startsWith(path))) return;
+
+      const body = ctx.body as { password?: unknown; newPassword?: unknown } | undefined;
+      const candidate = body?.password ?? body?.newPassword;
+      if (typeof candidate !== "string") return;
+
+      const problem = validatePassword(candidate);
+      if (problem) throw new APIError("BAD_REQUEST", { message: problem });
+    }),
+  },
+
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 10,
+    minPasswordLength: PASSWORD_MIN,
 
     // An account can be created but not used until the address is confirmed.
     requireEmailVerification: true,

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useId, useState } from "react";
 import { signIn, signUp } from "@/lib/auth-client";
 import { NICKNAME_MAX, NICKNAME_MIN, validateNickname } from "@/lib/nickname";
+import { PASSWORD_HINT, validatePassword } from "@/lib/password";
 
 /**
  * The sign-in and sign-up form.
@@ -43,7 +44,7 @@ export function AuthForm({
     setError(null);
 
     if (mode === "sign-up") {
-      const problem = validateNickname(nickname);
+      const problem = validateNickname(nickname) ?? validatePassword(password);
       if (problem) {
         setError(problem);
         return;
@@ -119,7 +120,7 @@ export function AuthForm({
             onChange={setNickname}
             autoComplete="username"
             maxLength={NICKNAME_MAX}
-            hint={`${NICKNAME_MIN} to ${NICKNAME_MAX} characters. This is how you appear on the site, and it cannot be changed later.`}
+            hint={`${NICKNAME_MIN} to ${NICKNAME_MAX} characters. Use letters, numbers, hyphens, and underscores, starting and ending with a letter or number. This is how you appear on the site, and it cannot be changed later.`}
           />
         )}
 
@@ -135,7 +136,7 @@ export function AuthForm({
           value={password}
           onChange={setPassword}
           mode={mode}
-          hint={mode === "sign-up" ? "At least 10 characters." : undefined}
+          hint={mode === "sign-up" ? PASSWORD_HINT : undefined}
         />
 
         {mode === "sign-in" && (

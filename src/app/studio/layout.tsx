@@ -20,6 +20,12 @@ export default async function StudioLayout({ children }: { children: React.React
             <Link href="/studio" className="underline-offset-4 hover:underline">
               Studio
             </Link>
+            <Link
+              href="/studio/moderation"
+              className="text-ink-muted underline-offset-4 hover:underline"
+            >
+              Moderation
+            </Link>
             {user.role === "admin" && (
               <Link href="/admin" className="text-ink-muted underline-offset-4 hover:underline">
                 Admin

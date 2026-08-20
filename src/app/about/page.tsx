@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DISPLAY_REGIONS } from "@/lib/lenses";
 import { formatEditorTitle, type EditorTitle } from "@/lib/editorial";
+import { Avatar } from "@/components/Avatar";
 import { LensPixel } from "@/components/LensPixel";
 import { authors } from "@/content/authors";
 import { site } from "@/lib/site";
@@ -80,14 +81,17 @@ export default function AboutPage() {
 
       <ul className="mx-auto mt-8 grid max-w-(--measure-wide) gap-x-10 gap-y-8 sm:grid-cols-2">
         {masthead.map((author) => (
-          <li key={author.id} className="border-rule border-t pt-4">
-            <h3 className="font-display text-xl font-semibold">
-              <Link href={`/by/${author.slug}`} className="underline-offset-4 hover:underline">
-                {author.name}
-              </Link>
-            </h3>
-            <p className="label text-ink-faint mt-1">{formatEditorTitle(author.title)}</p>
-            <p className="text-ink-muted mt-2 text-base leading-relaxed">{author.bio}</p>
+          <li key={author.id} className="border-rule flex gap-4 border-t pt-4">
+            <Avatar author={author} size="md" />
+            <div>
+              <h3 className="font-display text-xl font-semibold">
+                <Link href={`/by/${author.slug}`} className="underline-offset-4 hover:underline">
+                  {author.name}
+                </Link>
+              </h3>
+              <p className="label text-ink-faint mt-1">{formatEditorTitle(author.title)}</p>
+              <p className="text-ink-muted mt-2 text-base leading-relaxed">{author.bio}</p>
+            </div>
           </li>
         ))}
       </ul>

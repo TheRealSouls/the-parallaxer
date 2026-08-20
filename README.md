@@ -138,6 +138,21 @@ Also scaffolded, also unrun against a live database.
 
 Two rules worth keeping. Every server action re-checks the session and ownership, because a server action is a public endpoint regardless of which page renders the form that calls it. And article bodies are rebuilt from scratch by `src/lib/tiptap-doc.ts` before being stored, rather than trusted: an unrecognised node is dropped, and a link whose href is not plainly http, mailto, or an internal path loses its link.
 
+## Stage 4: the reader layer
+
+Comments, likes, and profiles. Also unrun against a live database.
+
+- Threads are one level deep. A reply to a reply attaches to the top of the thread rather than being refused, so nobody hits a wall mid-conversation.
+- Commenting needs a confirmed email address. That is the cheapest spam control there is: one click for a reader, a working inbox per account for a script.
+- Rate limiting is a `count` against the comments table, indexed on author and date. No Redis, no extra service.
+- Deletes are soft. A hard delete would take the replies with it and leave the thread unreadable.
+- `/studio/moderation` lists hidden comments beside visible ones, because the common mistake is hiding the wrong one and the fix has to be one click away.
+- Editor profiles carry a portrait and a personal lens map showing only that writer's work.
+
+Comments and likes load from `/api/articles/[slug]/engagement` after the article renders, rather than server-side. Same reason as the view beacon: like state and moderator controls are per reader, and rendering them on the server would make every article page dynamic for the sake of a section below the fold. Article pages stay `SSG`.
+
+Portraits live in `public/editors`, named after the profile slug; see the README there. An editor without one gets a placeholder built from their initials and their beat colour.
+
 ## Measuring what readers do
 
 Views are counted from the browser by `ViewBeacon`, not during the server render. That is the whole reason the article pages are still static: incrementing a counter while rendering would make every one of them dynamic.

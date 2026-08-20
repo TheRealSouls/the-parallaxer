@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArticleBody } from "@/components/ArticleBody";
 import { Cover, CoverCredit } from "@/components/Cover";
 import { ViewBeacon } from "@/components/ViewBeacon";
+import { ArticleEngagement } from "@/components/engagement/ArticleEngagement";
 import { ArticleCard } from "@/components/ArticleCard";
 import { LensTag } from "@/components/LensPixel";
 import { formatDate } from "@/lib/content";
@@ -96,6 +97,8 @@ export default async function ArticlePage({ params }: Params) {
           <ArticleBody body={article.body} />
         </div>
       </article>
+
+      <ArticleEngagement slug={article.slug} />
 
       <section
         aria-labelledby="author-heading"

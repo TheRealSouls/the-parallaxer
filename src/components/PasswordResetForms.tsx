@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useId, useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { PASSWORD_HINT, PASSWORD_MIN, validatePassword } from "@/lib/password";
 
 /**
  * The two halves of a password reset: asking for the email, and setting the new
@@ -100,6 +101,13 @@ export function ResetPasswordForm() {
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
+
+    const problem = validatePassword(password);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+
     setBusy(true);
 
     const result = await authClient.resetPassword({ newPassword: password, token: token! });
@@ -124,7 +132,7 @@ export function ResetPasswordForm() {
           id={id}
           type="password"
           required
-          minLength={10}
+          minLength={PASSWORD_MIN}
           value={password}
           autoComplete="new-password"
           onChange={(event) => setPassword(event.target.value)}
@@ -132,7 +140,7 @@ export function ResetPasswordForm() {
           className="border-ink bg-paper text-ink mt-1.5 w-full border px-3 py-2.5 text-base outline-none focus:ring-1 focus:ring-current"
         />
         <p id={`${id}-hint`} className="text-ink-faint mt-1.5 text-sm">
-          At least 10 characters.
+          {PASSWORD_HINT}
         </p>
       </div>
 

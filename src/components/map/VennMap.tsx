@@ -14,7 +14,14 @@ import { VennMapCanvas, type MapEntry } from "./VennMapCanvas";
  * has been placed. Unclaimed squares sit at a 22% tint, which keeps the shape of
  * the diagram readable even when very little has been published.
  */
-export function VennMap({ articles }: { articles: readonly Article[] }) {
+export function VennMap({
+  articles,
+  heading = "The field",
+}: {
+  articles: readonly Article[];
+  /** Overridden on a profile, where the map shows one writer's work. */
+  heading?: string;
+}) {
   const grid = buildGrid();
 
   const published = articles
@@ -68,7 +75,7 @@ export function VennMap({ articles }: { articles: readonly Article[] }) {
   return (
     <section aria-labelledby="map-heading" className="mx-auto w-full max-w-xl">
       <h2 id="map-heading" className="label border-ink border-b pb-2 text-center">
-        The field
+        {heading}
       </h2>
 
       <div className="mt-6">
@@ -79,6 +86,7 @@ export function VennMap({ articles }: { articles: readonly Article[] }) {
             x: l.x,
             y: l.y,
             icon: LENS_ICON[l.lens],
+            anchor: l.anchor,
           }))}
           viewBox={grid.viewBox}
           hint="Each square is one article. Point at a square to read its headline."

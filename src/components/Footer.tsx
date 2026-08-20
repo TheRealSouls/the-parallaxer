@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LENSES, lensName } from "@/lib/lenses";
 import { LensPixel } from "@/components/LensPixel";
+import { SocialLinks } from "@/components/SocialLinks";
 import { site } from "@/lib/site";
 
 export function Footer() {
@@ -57,9 +58,12 @@ export function Footer() {
       </div>
 
       <div className="border-rule border-t">
-        <p className="label text-ink-faint mx-auto w-full max-w-(--page) px-5 py-4">
-          &copy; {new Date().getFullYear()} {site.name}
-        </p>
+        <div className="mx-auto flex w-full max-w-(--page) flex-wrap items-center justify-between gap-4 px-5 py-4">
+          <p className="label text-ink-faint">
+            &copy; {new Date().getFullYear()} {site.name}
+          </p>
+          <SocialLinks />
+        </div>
       </div>
     </footer>
   );

@@ -12,6 +12,7 @@
   --font-display: var(--font-newsreader), Georgia, "Times New Roman", serif;
   --font-body: var(--font-source-serif), Georgia, "Times New Roman", serif;
   --font-label: var(--font-archivo-narrow), "Arial Narrow", Arial, sans-serif;
+  --font-pixel: var(--font-silkscreen), "Courier New", monospace;
 }
 
 @layer base {

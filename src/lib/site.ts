@@ -24,6 +24,22 @@ export const site = {
   },
 } as const;
 
+/**
+ * Social accounts, shown in the footer.
+ *
+ * Placeholder handles: replace each `url` with the real account before launch.
+ * An icon that leads to a dead page costs more credibility than a missing one,
+ * so delete any row you have not actually claimed yet.
+ */
+export const socials = [
+  { key: "linkedin", label: "LinkedIn", url: "https://www.linkedin.com/company/theparallaxer" },
+  { key: "x", label: "X", url: "https://x.com/theparallaxer" },
+  { key: "instagram", label: "Instagram", url: "https://www.instagram.com/theparallaxer" },
+  { key: "substack", label: "Substack", url: "https://theparallaxer.substack.com" },
+] as const;
+
+export type SocialKey = (typeof socials)[number]["key"];
+
 export const nav = [
   { href: "/lens/philosophy", label: "Philosophy" },
   { href: "/lens/politics", label: "Politics" },

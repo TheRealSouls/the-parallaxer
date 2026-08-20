@@ -15,15 +15,15 @@ export function Masthead() {
 
         <div className="py-7 text-center sm:py-9">
           <Link href="/" className="inline-block">
-            {/* The mark is line art on a cream ground. Multiply blending lets that
-                ground disappear into the paper instead of sitting on it as a square. */}
+            {/* The mark's cream ground has been keyed out to real transparency,
+                so it needs no blend mode and works on any background. */}
             <Image
               src="/logo.png"
               alt=""
               width={72}
               height={72}
               priority
-              className="mx-auto mb-1 h-14 w-14 mix-blend-multiply sm:h-16 sm:w-16"
+              className="mx-auto mb-1 h-14 w-14 sm:h-16 sm:w-16"
             />
             <span className="font-display block text-5xl leading-none font-semibold tracking-[-0.02em] sm:text-7xl">
               {site.name}

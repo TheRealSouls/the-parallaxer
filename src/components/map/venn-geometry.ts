@@ -109,8 +109,9 @@ export function buildGrid(): VennGrid {
     for (const cell of byRegion[code]) cell.index = n++;
   }
 
-  // Room outside the rim for the three circle labels.
-  const pad = 3;
+  // Room outside the rim for the three labels and their icons. The widest,
+  // PHILOSOPHY, needs about five units to the left of its anchor.
+  const pad = 5.5;
   return {
     cells,
     byRegion,
@@ -124,21 +125,23 @@ export function buildGrid(): VennGrid {
 }
 
 /**
- * Where to print each circle's name. Each label sits on the ray running from the
- * centre of the figure out through its circle's centre, just beyond the rim, so
- * no label ever lands on top of a cell.
+ * Where to print each circle's name.
+ *
+ * The two upper labels are anchored outward rather than centred, so their text
+ * grows away from the diagram no matter how wide it renders. That is what keeps
+ * them off the grid: a centred label sits half over the cells, and the exact
+ * width of a string is not known until the font has loaded, so it cannot be
+ * corrected for by nudging the position.
+ *
+ * Occupied cells span x -9 to 9 and y -8 to 9 at the current radius, and every
+ * anchor below clears that box on the axis its text runs along.
  */
 export function labelAnchors() {
-  const reach = RADIUS + 1.5;
-  return (Object.keys(CENTRES) as (keyof typeof CENTRES)[]).map((lens) => {
-    const c = CENTRES[lens];
-    const mag = Math.hypot(c.x, c.y) || 1;
-    return {
-      lens,
-      x: c.x + (c.x / mag) * reach,
-      y: c.y + (c.y / mag) * reach,
-    };
-  });
+  return [
+    { lens: "philosophy" as const, x: -9.9, y: -5.5, anchor: "end" as const },
+    { lens: "politics" as const, x: 9.9, y: -5.5, anchor: "start" as const },
+    { lens: "economics" as const, x: 0, y: 11.4, anchor: "middle" as const },
+  ];
 }
 
 /** Capacity per region and in total. Used by the calibration check. */

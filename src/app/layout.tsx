@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Newsreader, Source_Serif_4, Archivo_Narrow } from "next/font/google";
+import { Newsreader, Source_Serif_4, Archivo_Narrow, Silkscreen } from "next/font/google";
 import { Masthead } from "@/components/Masthead";
 import { Footer } from "@/components/Footer";
 import { site } from "@/lib/site";
@@ -26,6 +26,18 @@ const archivoNarrow = Archivo_Narrow({
   variable: "--font-archivo-narrow",
 });
 
+/**
+ * A pixel face, used only for the three labels on the map. It is the one place
+ * the site is deliberately not a newspaper, because the diagram is built out of
+ * squares and the lettering should admit it.
+ */
+const silkscreen = Silkscreen({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "700"],
+  variable: "--font-silkscreen",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
@@ -39,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${newsreader.variable} ${sourceSerif.variable} ${archivoNarrow.variable}`}
+      className={`${newsreader.variable} ${sourceSerif.variable} ${archivoNarrow.variable} ${silkscreen.variable}`}
     >
       <body className="flex min-h-screen flex-col">
         <a

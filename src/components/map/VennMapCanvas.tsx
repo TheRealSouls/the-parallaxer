@@ -20,10 +20,16 @@ export type MapEntry = {
   } | null;
 };
 
-export type MapLabel = { lens: string; x: number; y: number; icon: string };
+export type MapLabel = {
+  lens: string;
+  x: number;
+  y: number;
+  icon: string;
+  anchor: "start" | "middle" | "end";
+};
 
 /** Height of a circle's icon, in map cell units. */
-const ICON_SIZE = 1.15;
+const ICON_SIZE = 1;
 
 type Props = {
   entries: readonly MapEntry[];
@@ -189,33 +195,43 @@ export function VennMapCanvas({ entries, labels, viewBox, hint }: Props) {
           );
         })}
 
-        {labels.map((label) => (
-          <g key={label.lens}>
-            {/* Font Awesome glyphs are drawn on a 512 unit grid, so the scale
-                factor converts one into map cell units. */}
-            <g
-              transform={`translate(${label.x - ICON_SIZE / 2} ${label.y - ICON_SIZE - 0.5}) scale(${ICON_SIZE / 512})`}
-              aria-hidden="true"
-            >
-              <path d={label.icon} fill="var(--ink-faint)" />
+        {labels.map((label) => {
+          // The icon sits above the label, pulled to whichever side the text
+          // runs from, so the pair stays clear of the grid together.
+          const iconX =
+            label.anchor === "end"
+              ? label.x - ICON_SIZE
+              : label.anchor === "start"
+                ? label.x
+                : label.x - ICON_SIZE / 2;
+
+          return (
+            <g key={label.lens}>
+              {/* Font Awesome glyphs are drawn on a 512 unit grid, so the scale
+                  factor converts one into map cell units. */}
+              <g
+                transform={`translate(${iconX} ${label.y - ICON_SIZE - 0.9}) scale(${ICON_SIZE / 512})`}
+                aria-hidden="true"
+              >
+                <path d={label.icon} fill="var(--ink-faint)" />
+              </g>
+              <text
+                x={label.x}
+                y={label.y}
+                textAnchor={label.anchor}
+                dominantBaseline="middle"
+                fill="var(--ink-faint)"
+                style={{
+                  fontFamily: "var(--font-pixel)",
+                  fontSize: 0.55,
+                  letterSpacing: 0.02,
+                }}
+              >
+                {label.lens.toUpperCase()}
+              </text>
             </g>
-            <text
-              x={label.x}
-              y={label.y}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill="var(--ink-faint)"
-              style={{
-                fontFamily: "var(--font-label)",
-                fontSize: 0.62,
-                fontWeight: 600,
-                letterSpacing: 0.07,
-              }}
-            >
-              {label.lens.toUpperCase()}
-            </text>
-          </g>
-        ))}
+          );
+        })}
       </svg>
 
       {/* Fixed height, so swapping the text never nudges the page. */}
