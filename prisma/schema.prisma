@@ -313,3 +313,26 @@ model Like {
   @@id([userId, articleId])
   @@index([articleId])
 }
+
+/// A newsletter subscriber.
+///
+/// Double opt-in: a row exists from the moment somebody submits the form, but
+/// `confirmedAt` stays null until they open the link in their inbox, and only
+/// confirmed rows are ever sent to. That protects people from being signed up
+/// by somebody else typing their address, and protects the sending domain's
+/// reputation, which is the thing that decides whether mail arrives at all.
+model Subscriber {
+  id    String @id @default(cuid())
+  email String @unique
+
+  confirmedAt    DateTime?
+  unsubscribedAt DateTime?
+
+  /// Used by both the confirmation and unsubscribe links, so neither needs an
+  /// account. Rotated whenever the address resubscribes.
+  token String @unique
+
+  createdAt DateTime @default(now())
+
+  @@index([confirmedAt])
+}

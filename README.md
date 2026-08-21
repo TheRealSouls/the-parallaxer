@@ -159,6 +159,24 @@ Comments and likes load from `/api/articles/[slug]/engagement` after the article
 
 Portraits live in `public/editors`, named after the profile slug; see the README there. An editor without one gets a placeholder built from their initials and their beat colour.
 
+## The data seam
+
+`src/lib/data.ts` is the only place the site asks where articles come from. When `DATABASE_URL` is set the Prisma queries run; otherwise the Stage 1 sample content stands in. Every function is async either way, so no page changes when the database arrives, and the project still clones and runs with no database at all.
+
+Delete the sample branch once the archive is real.
+
+## Stage 5: growth
+
+- **SEO.** `robots.ts` and a `sitemap.ts` generated from the archive, canonical URLs on every page, and Organization, WebSite, Article, and Person JSON-LD built from the same records the page renders, so the two cannot drift.
+- **Share images.** Generated per article by `opengraph-image.tsx` on the article's own lens colour, with the headline in Newsreader and the pixel motif along the foot. Typographic rather than photographic, because the publication has no photography and a stock image would say nothing true about the piece. Every square in the ramp stays lighter than the ground; one at full strength is the background colour and vanishes.
+- **Feeds.** RSS and Atom for the whole archive, plus one RSS feed per lens including its overlaps. Hand-written, because a feed is a few hundred bytes of well-specified XML and a library would be larger than the code. Standfirsts only: a feed that reprints the article gives nobody a reason to arrive.
+- **Search.** Postgres full text search over headlines, standfirsts, kickers, and bylines, ranked by relevance then recency. `plainto_tsquery` treats input as words, so a stray colon cannot error or inject. Against sample content it falls back to a substring match. The form is a plain GET, so a search is a shareable URL and needs no JavaScript.
+- **Newsletter.** Double opt-in: a row exists on submit, but nothing is sent until the address is confirmed from the inbox. That stops anybody being subscribed by a stranger and protects the sending domain's reputation, which decides whether the weekly email arrives at all. One-click unsubscribe, no sign-in.
+- **Reading experience.** A progress bar driven entirely by CSS `animation-timeline: scroll()`, so it costs no JavaScript, guarded by `@supports` so unsupporting browsers get nothing rather than a bar stuck at full width. Related articles by shared lens region, and more from the same writer.
+- **Analytics.** Vercel Analytics and Speed Insights, both aggregate and cookieless, which is what lets the privacy policy keep saying we run no analytics identifying anyone individually.
+
+One note on the performance budget. The plan asks for no client JavaScript on the article route beyond the like button and comments island, and also for a subscribe form after the article body. Those conflict. The article route now carries three small islands: the view beacon, the newsletter form, and the engagement section. Reading progress adds none.
+
 ## Measuring what readers do
 
 Views are counted from the browser by `ViewBeacon`, not during the server render. That is the whole reason the article pages are still static: incrementing a counter while rendering would make every one of them dynamic.

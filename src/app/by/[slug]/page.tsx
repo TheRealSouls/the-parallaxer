@@ -2,22 +2,26 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/ArticleCard";
 import { Avatar } from "@/components/Avatar";
+import { PersonJsonLd } from "@/components/StructuredData";
 import { VennMap } from "@/components/map/VennMap";
-import { authors } from "@/content/authors";
+import { getAuthorBySlug, getArticlesByAuthor, getProfileSlugs } from "@/lib/data";
 import { describeEditorTitle, formatEditorTitle } from "@/lib/editorial";
-import { getArticlesByAuthor } from "@/content/sample-articles";
 
 type Params = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return Object.values(authors).map((a) => ({ slug: a.slug }));
+export async function generateStaticParams() {
+  return (await getProfileSlugs()).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const author = Object.values(authors).find((a) => a.slug === slug);
+  const author = await getAuthorBySlug(slug);
   if (!author) return {};
-  return { title: author.name, description: author.bio };
+  return {
+    title: author.name,
+    description: author.bio,
+    alternates: { canonical: `/by/${author.slug}` },
+  };
 }
 
 /**
@@ -26,13 +30,15 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
  */
 export default async function AuthorPage({ params }: Params) {
   const { slug } = await params;
-  const author = Object.values(authors).find((a) => a.slug === slug);
+  const author = await getAuthorBySlug(slug);
   if (!author) notFound();
 
-  const articles = getArticlesByAuthor(slug);
+  const articles = await getArticlesByAuthor(slug);
 
   return (
     <div className="mx-auto w-full max-w-(--page) px-5 py-10">
+      <PersonJsonLd author={author} articleCount={articles.length} />
+
       <header className="border-ink mx-auto max-w-(--measure) border-b-2 pb-6 text-center">
         <Avatar author={author} size="lg" className="mx-auto mb-5" />
         <h1 className="font-display text-4xl font-semibold sm:text-5xl">{author.name}</h1>

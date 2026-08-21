@@ -119,6 +119,39 @@
     pointer-events: none;
   }
 
+  /*
+    Reading progress, driven entirely by CSS.
+    A scroll listener would have meant a third client island on the article
+    route, which the performance budget rules out. A scroll-driven animation
+    costs no JavaScript at all. Guarded by @supports so browsers without it get
+    nothing rather than a bar stuck at full width.
+  */
+  .reading-progress {
+    display: none;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .reading-progress {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 40;
+      display: block;
+      height: 3px;
+      transform-origin: 0 50%;
+      animation: reading-progress-grow linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+
+  @keyframes reading-progress-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
   .rule-hair {
     border-top: 1px solid var(--rule);
   }

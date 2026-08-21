@@ -4,7 +4,7 @@ import { DISPLAY_REGIONS } from "@/lib/lenses";
 import { formatEditorTitle, type EditorTitle } from "@/lib/editorial";
 import { Avatar } from "@/components/Avatar";
 import { LensPixel } from "@/components/LensPixel";
-import { authors } from "@/content/authors";
+import { getMasthead } from "@/lib/data";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -20,10 +20,12 @@ const RANK_ORDER: Record<EditorTitle["rank"], number> = {
   guest: 3,
 };
 
-export default function AboutPage() {
-  const masthead = Object.values(authors).sort(
-    (a, b) => RANK_ORDER[a.title.rank] - RANK_ORDER[b.title.rank] || a.name.localeCompare(b.name),
-  );
+export default async function AboutPage() {
+  const masthead = (await getMasthead())
+    .slice()
+    .sort(
+      (a, b) => RANK_ORDER[a.title.rank] - RANK_ORDER[b.title.rank] || a.name.localeCompare(b.name),
+    );
 
   return (
     <div className="mx-auto w-full max-w-(--page) px-5 py-10">

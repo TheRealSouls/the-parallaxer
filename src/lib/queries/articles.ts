@@ -81,3 +81,52 @@ export async function getMapArticles(): Promise<Article[]> {
 export async function countPublishedByAuthor(authorId: string): Promise<number> {
   return prisma.article.count({ where: { authorId, status: "published" } });
 }
+
+/**
+ * Full text search over published articles.
+ *
+ * Postgres does this natively, so there is no index to host, no third-party
+ * search service, and nothing to keep in sync. `plainto_tsquery` treats the
+ * reader's input as words rather than query syntax, which means a stray
+ * apostrophe or colon cannot produce an error or an injection.
+ *
+ * Ranked by relevance, then recency. Body text is deliberately excluded: it is
+ * stored as JSON, and matching inside it would surface articles whose only
+ * connection to the term is one aside in paragraph nine.
+ */
+export async function searchPublished(term: string, limit = 50): Promise<Article[]> {
+  const ranked = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT id
+    FROM "Article"
+    WHERE status::text = 'published'
+      AND to_tsvector('english',
+            coalesce(title, '') || ' ' ||
+            coalesce(dek, '') || ' ' ||
+            coalesce(kicker, '') || ' ' ||
+            coalesce(excerpt, '')
+          ) @@ plainto_tsquery('english', ${term})
+    ORDER BY ts_rank(
+      to_tsvector('english',
+        coalesce(title, '') || ' ' ||
+        coalesce(dek, '') || ' ' ||
+        coalesce(kicker, '') || ' ' ||
+        coalesce(excerpt, '')
+      ),
+      plainto_tsquery('english', ${term})
+    ) DESC, "publishedAt" DESC
+    LIMIT ${limit}
+  `;
+
+  if (ranked.length === 0) return [];
+
+  const order = new Map(ranked.map((row, index) => [row.id, index]));
+  const rows = await prisma.article.findMany({
+    where: { id: { in: ranked.map((row) => row.id) } },
+    include: withAuthor,
+  });
+
+  // findMany does not preserve the ranking, so it is reapplied here.
+  return rows
+    .map((row: ArticleRow) => toArticle(row))
+    .sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+}

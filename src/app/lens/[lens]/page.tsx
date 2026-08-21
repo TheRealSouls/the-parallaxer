@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleCard } from "@/components/ArticleCard";
 import { LensPixel } from "@/components/LensPixel";
-import { LENSES, LENS_BIT, isLens, lensName, regionsWithLens, toRegionCode } from "@/lib/lenses";
-import { getPublishedArticles } from "@/content/sample-articles";
+import { LENSES, isLens, lensName, regionsWithLens, toRegionCode } from "@/lib/lenses";
+import { getArticlesByLens } from "@/lib/data";
 
 type Params = { params: Promise<{ lens: string }> };
 
@@ -17,6 +17,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: lensName(lens),
     description: `Every Parallaxer article read wholly or partly through the ${lens} lens.`,
+    alternates: {
+      canonical: `/lens/${lens}`,
+      types: {
+        "application/rss+xml": [{ url: `/lens/${lens}/feed.xml`, title: `${lensName(lens)} feed` }],
+      },
+    },
   };
 }
 
@@ -24,8 +30,7 @@ export default async function LensPage({ params }: Params) {
   const { lens } = await params;
   if (!isLens(lens)) notFound();
 
-  const bit = LENS_BIT[lens];
-  const articles = getPublishedArticles().filter((a) => (toRegionCode(a.lenses) & bit) !== 0);
+  const articles = await getArticlesByLens(lens);
   const regions = regionsWithLens(lens);
 
   return (

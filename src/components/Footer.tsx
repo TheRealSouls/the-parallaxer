@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LENSES, lensName } from "@/lib/lenses";
 import { LensPixel } from "@/components/LensPixel";
+import { NewsletterForm } from "@/components/NewsletterForm";
 import { SocialLinks } from "@/components/SocialLinks";
 import { site } from "@/lib/site";
 
@@ -11,6 +12,9 @@ export function Footer() {
         <div>
           <p className="font-display text-2xl font-semibold">{site.name}</p>
           <p className="text-ink-muted mt-2 max-w-xs text-sm leading-relaxed">{site.statement}</p>
+          <div className="max-w-xs">
+            <NewsletterForm />
+          </div>
         </div>
 
         <nav aria-label="Sections">

@@ -45,5 +45,6 @@ export const nav = [
   { href: "/lens/politics", label: "Politics" },
   { href: "/lens/economics", label: "Economics" },
   { href: "/about", label: "About" },
+  { href: "/search", label: "Search" },
   { href: "/submit", label: "Submit" },
 ] as const;

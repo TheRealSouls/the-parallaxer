@@ -1,9 +1,9 @@
 import { VennMap } from "@/components/map/VennMap";
 import { FrontPage } from "@/components/FrontPage";
-import { getPublishedArticles } from "@/content/sample-articles";
+import { getPublishedArticles } from "@/lib/data";
 
-export default function Home() {
-  const articles = getPublishedArticles();
+export default async function Home() {
+  const articles = await getPublishedArticles();
 
   return (
     <div className="mx-auto w-full max-w-(--page) px-5 py-10">

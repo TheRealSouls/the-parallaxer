@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Newsreader, Source_Serif_4, Archivo_Narrow, Silkscreen } from "next/font/google";
 import { Masthead } from "@/components/Masthead";
+import { OrganisationJsonLd, WebSiteJsonLd } from "@/components/StructuredData";
 import { Footer } from "@/components/Footer";
 import { site } from "@/lib/site";
 import "./globals.css";
@@ -45,6 +48,20 @@ export const metadata: Metadata = {
     template: `%s | ${site.name}`,
   },
   description: site.description,
+  alternates: {
+    canonical: "/",
+    types: {
+      "application/rss+xml": [{ url: "/feed.xml", title: `${site.name} RSS` }],
+      "application/atom+xml": [{ url: "/atom.xml", title: `${site.name} Atom` }],
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    locale: "en_IE",
+    url: site.url,
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -60,11 +77,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
+        <OrganisationJsonLd />
+        <WebSiteJsonLd />
         <Masthead />
         <main id="main" className="flex-1">
           {children}
         </main>
         <Footer />
+
+        {/*
+          Traffic counts and real-user performance timings. Both are aggregate
+          and cookieless, which is what lets the privacy policy keep saying we
+          run no analytics that identify anyone individually. Neither reports
+          anything outside a Vercel deployment, so local runs stay silent.
+        */}
+        <Analytics />
+        <SpeedInsights />
 
         {/*
           Font Awesome kit, for icons used in page copy. The three lens glyphs on
