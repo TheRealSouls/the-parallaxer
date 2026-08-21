@@ -143,11 +143,17 @@ Two rules worth keeping. Every server action re-checks the session and ownership
 Comments, likes, and profiles. Also unrun against a live database.
 
 - Threads are one level deep. A reply to a reply attaches to the top of the thread rather than being refused, so nobody hits a wall mid-conversation.
+- Authors may edit their own comment for 15 minutes. The window is the point: without it somebody could soften a remark after five people had replied, and the thread would stop making sense.
+- `editedAt` is stamped only by the author. `updatedAt` also moves when a moderator acts, and using it would mark moderated comments as edited by the person who wrote them.
+- Reports are one row per person per comment, so reporting repeatedly cannot push something up the queue. Reported comments sort first.
+- Suspensions are bans, not deletions: a suspended writer keeps their published articles and their bylines. One editor cannot suspend another; only an admin can.
+- Any article can have its thread closed without hiding what is already there.
 - Commenting needs a confirmed email address. That is the cheapest spam control there is: one click for a reader, a working inbox per account for a script.
-- Rate limiting is a `count` against the comments table, indexed on author and date. No Redis, no extra service.
+- Rate limiting runs at two levels. Per account it is a `count` against the comments table, indexed on author and date. Per network address it is a salted one-way hash in a disposable counter, because per-account limits cannot see one machine registering fifty accounts. The address itself is never stored, and the privacy policy says so.
 - Deletes are soft. A hard delete would take the replies with it and leave the thread unreadable.
 - `/studio/moderation` lists hidden comments beside visible ones, because the common mistake is hiding the wrong one and the fix has to be one click away.
 - Editor profiles carry a portrait and a personal lens map showing only that writer's work.
+- Profile editing lives at `/account/profile`, not `/studio/profile` as originally planned. Guest contributors have a byline and a profile but only reader permissions, so the studio is closed to them; putting it under `/account` means everybody with a profile can maintain one.
 
 Comments and likes load from `/api/articles/[slug]/engagement` after the article renders, rather than server-side. Same reason as the view beacon: like state and moderator controls are per reader, and rendering them on the server would make every article page dynamic for the sake of a section below the fold. Article pages stay `SSG`.
 

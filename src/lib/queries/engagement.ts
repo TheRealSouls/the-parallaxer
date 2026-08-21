@@ -16,6 +16,7 @@ export type CommentView = {
   id: string;
   body: string;
   createdAt: string;
+  /** Set only when the author rewrote it, never when a moderator acted. */
   edited: boolean;
   author: {
     id: string;
@@ -76,8 +77,7 @@ export async function getComments(articleId: string): Promise<CommentView[]> {
     id: row.id,
     body: row.body,
     createdAt: row.createdAt.toISOString(),
-    // A second of slack, because createdAt and updatedAt are written separately.
-    edited: row.updatedAt.getTime() - row.createdAt.getTime() > 1000,
+    edited: row.editedAt !== null,
     author: toCommentAuthor(row.author),
     replies: (byParent.get(row.id) ?? []).map(view),
   });
@@ -118,19 +118,41 @@ export async function getModerationQueue(limit = 100) {
   const rows = await prisma.comment.findMany({
     where: { status: { in: ["visible", "hidden"] } },
     include: {
-      author: authorSelect,
+      author: {
+        select: {
+          id: true,
+          name: true,
+          nickname: true,
+          slug: true,
+          rank: true,
+          beat: true,
+          role: true,
+          bannedUntil: true,
+        },
+      },
       article: { select: { slug: true, title: true } },
+      reports: { select: { reason: true }, take: 10 },
+      _count: { select: { reports: true } },
     },
-    orderBy: { createdAt: "desc" },
+    // Reported comments first, because those are the ones somebody is waiting on.
+    orderBy: [{ reports: { _count: "desc" } }, { createdAt: "desc" }],
     take: limit,
   });
+
+  const now = new Date();
 
   return rows.map((row) => ({
     id: row.id,
     body: row.body,
     status: row.status,
     createdAt: row.createdAt.toISOString(),
-    author: toCommentAuthor(row.author),
+    reportCount: row._count.reports,
+    reasons: row.reports.map((report) => report.reason).filter((r): r is string => Boolean(r)),
+    author: {
+      ...toCommentAuthor(row.author),
+      role: row.author.role,
+      banned: row.author.bannedUntil ? row.author.bannedUntil > now : false,
+    },
     article: row.article,
   }));
 }

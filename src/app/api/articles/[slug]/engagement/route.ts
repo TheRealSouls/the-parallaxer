@@ -16,7 +16,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
 
   const article = await prisma.article.findFirst({
     where: { slug, status: "published" },
-    select: { id: true },
+    select: { id: true, commentsLocked: true },
   });
   if (!article) return NextResponse.json({ error: "not found" }, { status: 404 });
 
@@ -29,6 +29,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
   return NextResponse.json(
     {
       articleId: article.id,
+      commentsLocked: article.commentsLocked,
       comments,
       likes,
       viewer: viewer

@@ -40,6 +40,11 @@ export default async function AccountPage() {
 
       <div className="mx-auto mt-8 max-w-(--measure) space-y-3 text-base">
         <p>
+          <Link href="/account/profile" className="underline underline-offset-2">
+            Edit your public profile
+          </Link>
+        </p>
+        <p>
           <Link href="/forgot-password" className="underline underline-offset-2">
             Change your password
           </Link>

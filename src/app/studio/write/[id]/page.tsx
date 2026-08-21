@@ -28,6 +28,7 @@ export default async function WritePage({ params }: { params: Promise<{ id: stri
           slug: article.slug,
           status: article.status,
           publishedAt: article.publishedAt?.toISOString() ?? null,
+          commentsLocked: article.commentsLocked,
         }}
       />
 

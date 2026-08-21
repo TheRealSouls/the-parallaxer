@@ -3,8 +3,15 @@
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { deleteComment, moderateComment, postComment, toggleLike } from "@/app/actions/engagement";
-import { COMMENT_MAX } from "@/lib/engagement-limits";
+import {
+  deleteComment,
+  editComment,
+  moderateComment,
+  postComment,
+  reportComment,
+  toggleLike,
+} from "@/app/actions/engagement";
+import { COMMENT_EDIT_GRACE_MINUTES, COMMENT_MAX } from "@/lib/engagement-limits";
 import type { CommentView } from "@/lib/queries/engagement";
 import { formatEditorTitle, type EditorTitle } from "@/lib/editorial";
 
@@ -21,6 +28,7 @@ type Viewer = { id: string; nickname: string; canModerate: boolean } | null;
 
 type Payload = {
   articleId: string;
+  commentsLocked: boolean;
   comments: CommentView[];
   likes: { count: number; liked: boolean };
   viewer: Viewer;
@@ -29,6 +37,10 @@ type Payload = {
 export function ArticleEngagement({ slug }: { slug: string }) {
   const [data, setData] = useState<Payload | null>(null);
   const [failed, setFailed] = useState(false);
+  // Captured when the thread loads rather than read during render, which would
+  // be impure. The server is authoritative on the edit window regardless; this
+  // only decides whether the control is worth offering.
+  const [loadedAt, setLoadedAt] = useState(0);
 
   // Bumped to re-run the fetch after a comment is posted or removed.
   const [revision, setRevision] = useState(0);
@@ -44,7 +56,10 @@ export function ArticleEngagement({ slug }: { slug: string }) {
         const response = await fetch(`/api/articles/${encodeURIComponent(slug)}/engagement`);
         if (!response.ok) throw new Error(String(response.status));
         const payload = (await response.json()) as Payload;
-        if (!cancelled) setData(payload);
+        if (!cancelled) {
+          setData(payload);
+          setLoadedAt(Date.now());
+        }
       } catch {
         if (!cancelled) setFailed(true);
       }
@@ -84,12 +99,18 @@ export function ArticleEngagement({ slug }: { slug: string }) {
         <p className="text-ink-faint mt-5 text-base">Loading</p>
       ) : (
         <>
-          <CommentForm
-            articleId={data.articleId}
-            parentId={null}
-            viewer={data.viewer}
-            onPosted={reload}
-          />
+          {data.commentsLocked ? (
+            <p className="text-ink-muted border-rule mt-5 border-b pb-5 text-base">
+              Comments are closed on this article. What is already here stays.
+            </p>
+          ) : (
+            <CommentForm
+              articleId={data.articleId}
+              parentId={null}
+              viewer={data.viewer}
+              onPosted={reload}
+            />
+          )}
 
           {data.comments.length === 0 ? (
             <p className="text-ink-faint mt-8 text-base">
@@ -103,6 +124,8 @@ export function ArticleEngagement({ slug }: { slug: string }) {
                     comment={comment}
                     articleId={data.articleId}
                     viewer={data.viewer}
+                    locked={data.commentsLocked}
+                    now={loadedAt}
                     onChanged={reload}
                   />
                 </li>
@@ -178,37 +201,71 @@ function Comment({
   comment,
   articleId,
   viewer,
+  locked,
+  now,
   onChanged,
 }: {
   comment: CommentView;
   articleId: string;
   viewer: Viewer;
+  locked: boolean;
+  /** Timestamp captured when the thread loaded. See ArticleEngagement. */
+  now: number;
   onChanged: () => void;
 }) {
   const [replying, setReplying] = useState(false);
+  const [editing, setEditing] = useState(false);
+
+  const own = viewer?.id === comment.author.id;
+  const withinGrace =
+    now - new Date(comment.createdAt).getTime() < COMMENT_EDIT_GRACE_MINUTES * 60_000;
 
   return (
     <article>
       <Byline author={comment.author} createdAt={comment.createdAt} edited={comment.edited} />
 
-      <div className="mt-1.5 space-y-3 text-base leading-relaxed">
-        {comment.body.split(/\n{2,}/).map((paragraph, i) => (
-          <p key={i}>{paragraph}</p>
-        ))}
-      </div>
+      {editing ? (
+        <EditForm
+          comment={comment}
+          onDone={() => {
+            setEditing(false);
+            onChanged();
+          }}
+          onCancel={() => setEditing(false)}
+        />
+      ) : (
+        <div className="mt-1.5 space-y-3 text-base leading-relaxed">
+          {comment.body.split(/\n{2,}/).map((paragraph, i) => (
+            <p key={i}>{paragraph}</p>
+          ))}
+        </div>
+      )}
 
-      <div className="label text-ink-faint mt-2 flex flex-wrap gap-4">
-        {viewer && (
-          <button
-            type="button"
-            onClick={() => setReplying((current) => !current)}
-            className="underline-offset-4 hover:underline"
-          >
-            {replying ? "Cancel" : "Reply"}
-          </button>
-        )}
-        <CommentControls comment={comment} viewer={viewer} onChanged={onChanged} />
-      </div>
+      {!editing && (
+        <div className="label text-ink-faint mt-2 flex flex-wrap gap-4">
+          {viewer && !locked && (
+            <button
+              type="button"
+              onClick={() => setReplying((current) => !current)}
+              className="underline-offset-4 hover:underline"
+            >
+              {replying ? "Cancel" : "Reply"}
+            </button>
+          )}
+
+          {own && withinGrace && (
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="underline-offset-4 hover:underline"
+            >
+              Edit
+            </button>
+          )}
+
+          <CommentControls comment={comment} viewer={viewer} onChanged={onChanged} />
+        </div>
+      )}
 
       {replying && (
         <CommentForm
@@ -230,6 +287,8 @@ function Comment({
                 comment={reply}
                 articleId={articleId}
                 viewer={viewer}
+                locked={locked}
+                now={now}
                 onChanged={onChanged}
               />
             </li>
@@ -237,6 +296,70 @@ function Comment({
         </ul>
       )}
     </article>
+  );
+}
+
+function EditForm({
+  comment,
+  onDone,
+  onCancel,
+}: {
+  comment: CommentView;
+  onDone: () => void;
+  onCancel: () => void;
+}) {
+  const [body, setBody] = useState(comment.body);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setBusy(true);
+    const result = await editComment(comment.id, body);
+    setBusy(false);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    onDone();
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="mt-2">
+      <label htmlFor={`edit-${comment.id}`} className="sr-only">
+        Edit your comment
+      </label>
+      <textarea
+        id={`edit-${comment.id}`}
+        value={body}
+        onChange={(event) => setBody(event.target.value)}
+        maxLength={COMMENT_MAX}
+        rows={4}
+        className="border-rule bg-paper text-ink focus:border-ink w-full border px-3 py-2.5 text-base outline-none"
+      />
+      {error && (
+        <p role="alert" className="mt-2 text-base">
+          {error}
+        </p>
+      )}
+      <div className="mt-2 flex gap-3">
+        <button
+          type="submit"
+          disabled={busy || body.trim().length === 0}
+          className="label bg-ink text-paper px-4 py-2 underline-offset-4 hover:underline disabled:opacity-50"
+        >
+          {busy ? "Saving" : "Save"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="label text-ink-muted underline underline-offset-4"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -250,10 +373,11 @@ function CommentControls({
   onChanged: () => void;
 }) {
   const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+
   if (!viewer) return null;
 
   const own = viewer.id === comment.author.id;
-  if (!own && !viewer.canModerate) return null;
 
   async function run(action: () => Promise<unknown>) {
     setBusy(true);
@@ -274,6 +398,24 @@ function CommentControls({
           Delete
         </button>
       )}
+
+      {!own && (
+        <button
+          type="button"
+          disabled={busy || note !== null}
+          onClick={async () => {
+            const reason = window.prompt("What is wrong with this comment? (optional)") ?? "";
+            setBusy(true);
+            const result = await reportComment(comment.id, reason);
+            setBusy(false);
+            setNote(result.ok ? "Reported" : result.error);
+          }}
+          className="underline-offset-4 hover:underline"
+        >
+          Report
+        </button>
+      )}
+
       {!own && viewer.canModerate && (
         <button
           type="button"
@@ -284,6 +426,8 @@ function CommentControls({
           Hide
         </button>
       )}
+
+      {note && <span>{note}</span>}
     </>
   );
 }

@@ -3,7 +3,9 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
+import { SIGNUP_IP_LIMIT, SIGNUP_IP_WINDOW_MINUTES } from "@/lib/engagement-limits";
 import { PASSWORD_MIN, validatePassword } from "@/lib/password";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { site } from "@/lib/site";
 
 /**
@@ -51,17 +53,29 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
 
   /**
-   * Enforces the password rules server side.
+   * Server-side gates on the credential endpoints.
    *
-   * The forms check the same rules for immediate feedback, but that is a
-   * courtesy: these endpoints are reachable directly, so the rule that actually
-   * holds is this one. Better Auth enforces the length floor by itself; the
-   * composition rule is ours.
+   * The forms check the same password rules for immediate feedback, but that is
+   * a courtesy: these endpoints are reachable directly, so the rule that
+   * actually holds is this one. Better Auth enforces the length floor by itself;
+   * the composition rule is ours.
+   *
+   * Sign-up is also throttled by network address. Per-account limits cannot see
+   * one machine registering fifty accounts, which is the shape abuse takes here.
    */
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       const guarded = ["/sign-up/email", "/reset-password", "/change-password"];
       if (!guarded.some((path) => ctx.path.startsWith(path))) return;
+
+      if (ctx.path.startsWith("/sign-up/email")) {
+        const allowance = await checkRateLimit("signup", SIGNUP_IP_LIMIT, SIGNUP_IP_WINDOW_MINUTES);
+        if (!allowance.allowed) {
+          throw new APIError("TOO_MANY_REQUESTS", {
+            message: "Too many accounts have been created from this connection. Try again later.",
+          });
+        }
+      }
 
       const body = ctx.body as { password?: unknown; newPassword?: unknown } | undefined;
       const candidate = body?.password ?? body?.newPassword;

@@ -100,12 +100,18 @@ model User {
   /// reads this yet.
   membershipUntil DateTime?
 
+  /// While this is in the future the account may read but not comment or like.
+  /// A ban rather than a deletion, so their published work and its byline stay.
+  bannedUntil  DateTime?
+  bannedReason String?
+
   sessions  Session[]
   accounts  Account[]
   articles  Article[]
   revisions Revision[]
   comments  Comment[]
   likes     Like[]
+  reports   CommentReport[]
 
   @@index([role])
 }
@@ -188,6 +194,10 @@ model Article {
   /// density mode.
   mapCell Int? @unique
 
+  /// Closes the thread without hiding what is already there. Used when a piece
+  /// attracts more heat than argument.
+  commentsLocked Boolean @default(false)
+
   /// Null means the generated cover art is used. See src/components/CoverArt.tsx.
   coverImage  String?
   coverAlt    String?
@@ -250,11 +260,47 @@ model Comment {
   body   String
   status CommentStatus @default(visible)
 
+  /// Stamped only when the author edits their own words. Distinct from
+  /// updatedAt, which also moves when a moderator hides or restores a comment,
+  /// and would otherwise mark moderated comments as edited by their author.
+  editedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  reports CommentReport[]
+
   @@index([articleId, createdAt])
   @@index([parentId])
+  @@index([status, createdAt])
+}
+
+/// One row per person per comment, so a reader cannot report the same comment
+/// repeatedly to push it up the queue.
+model CommentReport {
+  commentId  String
+  comment    Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  @@id([commentId, reporterId])
+  @@index([createdAt])
+}
+
+/// Short-lived counters for throttling by network address.
+///
+/// The key is a salted hash, never the address itself, and rows are disposable:
+/// nothing here can be traced back to a person or joined to their account. It
+/// exists to stop one machine registering fifty accounts, which per-account
+/// limits cannot see.
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  keyHash   String
+  createdAt DateTime @default(now())
+
+  @@index([keyHash, createdAt])
 }
 
 model Like {

@@ -5,6 +5,7 @@ import { EditorContent, useEditor, type Content, type Editor as TiptapEditor } f
 import StarterKit from "@tiptap/starter-kit";
 import NextLink from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { setCommentsLocked } from "@/app/actions/engagement";
 import { publishArticle, saveDraft, saveRevision } from "@/app/studio/actions";
 import { LensSelector } from "@/components/studio/LensSelector";
 import type { Doc } from "@/lib/content";
@@ -36,6 +37,7 @@ type Props = {
     slug: string;
     status: string;
     publishedAt: string | null;
+    commentsLocked: boolean;
   };
 };
 
@@ -49,6 +51,7 @@ export function Editor({ id, initial }: Props) {
   const [saving, setSaving] = useState(false);
   const [problems, setProblems] = useState<string[]>([]);
   const [published, setPublished] = useState(initial.status === "published");
+  const [locked, setLocked] = useState(initial.commentsLocked);
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef({ title, kicker, dek, lenses, body: initial.body });
@@ -188,6 +191,29 @@ export function Editor({ id, initial }: Props) {
         </div>
 
         <LensSelector value={lenses} onChange={setLenses} />
+
+        {published && (
+          <div>
+            <p className="label text-ink-muted">Comments</p>
+            <p className="mt-1 text-base">
+              {locked ? "Closed" : "Open"}
+              <button
+                type="button"
+                onClick={async () => {
+                  const next = !locked;
+                  setLocked(next);
+                  await setCommentsLocked(id, next);
+                }}
+                className="label text-ink-muted ml-3 underline underline-offset-4"
+              >
+                {locked ? "Reopen" : "Close"}
+              </button>
+            </p>
+            <p className="text-ink-faint mt-1 text-sm">
+              Closing hides nothing already posted; it only stops new comments.
+            </p>
+          </div>
+        )}
 
         <div>
           <p className="label text-ink-muted">Address</p>

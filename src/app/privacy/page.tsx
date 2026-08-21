@@ -70,6 +70,13 @@ export default function PrivacyPage() {
           <strong>If you write for us:</strong> the profile information you choose to publish, such
           as your biography, portrait, and links to your work elsewhere. This is public by design.
         </p>
+        <p className="mt-6">
+          <strong>To stop abuse:</strong> when you sign up or post a comment we store a one-way hash
+          of your network address in a counter, so that one machine cannot register dozens of
+          accounts or flood a thread. The address itself is never written down, the hash cannot be
+          reversed to recover it, the rows hold nothing else, and they are discarded within the
+          hour. Nothing in that counter can be linked to your account.
+        </p>
 
         <h2 className="mt-12 text-2xl">What we do not do</h2>
         <ul className="marker:text-ink-faint mt-6 list-disc space-y-2 pl-6">
@@ -82,10 +89,10 @@ export default function PrivacyPage() {
         <h2 className="mt-12 text-2xl">Our lawful basis</h2>
         <p className="mt-6">
           We process account data to perform the service you asked for when you registered, which is
-          the contract basis under Article 6(1)(b). We process server logs and security data on the
-          basis of our legitimate interest in keeping the site available and free of abuse, under
-          Article 6(1)(f). Where we rely on consent, such as for a newsletter, you may withdraw it
-          at any time without affecting what came before.
+          the contract basis under Article 6(1)(b). We process server logs and the abuse counters
+          described above on the basis of our legitimate interest in keeping the site available and
+          free of abuse, under Article 6(1)(f). Where we rely on consent, such as for a newsletter,
+          you may withdraw it at any time without affecting what came before.
         </p>
 
         <h2 className="mt-12 text-2xl">Cookies</h2>
