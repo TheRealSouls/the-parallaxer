@@ -216,6 +216,28 @@ prisma/schema.prisma
 
 Stage 3 adds the Tiptap editing studio. Stage 4 adds comments, likes, and full editor profiles. Stage 5 is SEO, feeds, and the newsletter. Stage 6 is monetisation, which is also when the legal pages need revisiting.
 
+## Deploying
+
+`src/generated` is gitignored, because generated code does not belong in version control. Prisma 7 with a custom output path does **not** generate on install by itself, so a fresh checkout has no client until something runs `prisma generate`. Both `postinstall` and `build` run it:
+
+```bash
+npm run build
+```
+
+Remove either one and a clean deploy fails with `Can't resolve '@/generated/prisma/client'`.
+
+Environment variables a deployment needs:
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `DATABASE_URL` | For real content | Without it the site serves the sample archive and the newsletter refuses politely. |
+| `BETTER_AUTH_SECRET` | Yes in production | The app throws on first request without it rather than signing with a known key. |
+| `BETTER_AUTH_URL` | Yes in production | Must be the deployed origin. Left unset it defaults to localhost and sign-in breaks. |
+| `ADMIN_EMAIL` | Once | The first account created with this address becomes admin and founding editor. |
+| `RESEND_API_KEY`, `MAIL_FROM` | For email | Without them verification and newsletter mail is written to the server log instead of sent. |
+
+`@vercel/analytics` and `@vercel/speed-insights` only report on Vercel. On any other host they load and do nothing, so drop them if the site is not going there.
+
 ## Known advisory
 
 `npm audit` reports a high-severity issue in `deepmerge-ts`, reached through the Prisma CLI's config loader. It is a build-time dependency, is not shipped to the browser or the server bundle, and is only fed our own `prisma.config.ts`. The offered fix downgrades Prisma to 6, a major version back, so it has been left alone deliberately.
