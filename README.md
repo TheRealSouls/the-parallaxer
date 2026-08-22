@@ -226,6 +226,8 @@ npm run build
 
 Remove either one and a clean deploy fails with `Can't resolve '@/generated/prisma/client'`.
 
+The build also applies migrations, but only when `DATABASE_URL` is set. Running without a database is a legitimate state, so `scripts/migrate.mjs` skips out quietly rather than failing the build. It uses `migrate deploy`, which applies existing migrations and never generates, prompts, or resets, which is what should be pointed at a production database. If migrations fail the deploy stops, rather than starting the app against a database whose shape does not match the code.
+
 Environment variables a deployment needs:
 
 | Variable | Required | Notes |
