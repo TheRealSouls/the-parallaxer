@@ -131,7 +131,13 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
+  id String @id
+
+  /// Which provider issued this account, e.g. "local:credential" for an email
+  /// and password sign-up. Better Auth 1.7 requires it and uniquely indexes it
+  /// with accountId; it is not in the older documented schema.
+  issuer String
+
   accountId             String
   providerId            String
   userId                String
@@ -146,6 +152,7 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  @@unique([issuer, accountId])
   @@index([userId])
 }
 
