@@ -343,3 +343,31 @@ model Subscriber {
 
   @@index([confirmedAt])
 }
+
+/// One weekly digest that has gone out.
+///
+/// Exists so a send is recorded rather than merely attempted. It gives the next
+/// issue a definite starting point (everything published since the last one),
+/// makes a double send obvious instead of silent, and leaves a record of what
+/// each issue contained without keeping any per-recipient tracking.
+model NewsletterIssue {
+  id     String @id @default(cuid())
+  number Int    @unique
+
+  subject String
+
+  /// Slugs included, in the order they appeared.
+  articleSlugs String[]
+
+  /// How many confirmed addresses it went to. A count, not a list: who opened
+  /// or clicked is deliberately not recorded anywhere.
+  recipientCount Int @default(0)
+
+  /// Null while a send is in progress, set when it finishes. A row with no
+  /// sentAt is a send that died partway and needs looking at.
+  sentAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([sentAt])
+}
