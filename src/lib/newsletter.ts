@@ -3,7 +3,7 @@ import "server-only";
 import type { Article } from "@/lib/content";
 import { prisma } from "@/lib/db";
 import { DISPLAY_REGIONS, REGIONS, toRegionCode, type RegionCode } from "@/lib/lenses";
-import { sendBatch, type Mail } from "@/lib/mail";
+import { mailOrigin, sendBatch, type Mail } from "@/lib/mail";
 import { getPublishedArticles } from "@/lib/data";
 import { site } from "@/lib/site";
 
@@ -28,14 +28,20 @@ export type Issue = {
   since: Date;
 };
 
-export async function buildIssue(): Promise<Issue | null> {
+export async function buildIssue(options?: { days?: number }): Promise<Issue | null> {
   const last = await prisma.newsletterIssue.findFirst({
     where: { sentAt: { not: null } },
     orderBy: { number: "desc" },
     select: { number: true, sentAt: true },
   });
 
-  const since = last?.sentAt ?? new Date(Date.now() - 7 * 86_400_000);
+  // `days` widens the window on purpose, and only the dry run passes it. It
+  // exists so a first issue can be previewed against an archive that is older
+  // than a week, which is otherwise impossible to look at before sending one.
+  const since =
+    options?.days != null
+      ? new Date(Date.now() - options.days * 86_400_000)
+      : (last?.sentAt ?? new Date(Date.now() - 7 * 86_400_000));
 
   const articles = (await getPublishedArticles()).filter(
     (article) => new Date(article.publishedAt) > since,
@@ -79,7 +85,7 @@ export function renderIssue(issue: Issue, unsubscribeToken: string): string {
     for (const article of group) {
       sections.push(`  ${article.title}`);
       if (article.dek) sections.push(`  ${article.dek}`);
-      sections.push(`  ${site.url}/article/${article.slug}`);
+      sections.push(`  ${mailOrigin}/article/${article.slug}`);
       sections.push(`  ${article.author.name} · ${article.readingMinutes} min`);
       sections.push("");
     }
@@ -98,10 +104,10 @@ export function renderIssue(issue: Issue, unsubscribeToken: string): string {
     ...sections,
     "".padEnd(58, "-"),
     "",
-    `Read everything at ${site.url}`,
+    `Read everything at ${mailOrigin}`,
     "",
     "You are receiving this because you confirmed your address.",
-    `Unsubscribe in one click: ${site.url}/newsletter/unsubscribe?token=${unsubscribeToken}`,
+    `Unsubscribe in one click: ${mailOrigin}/newsletter/unsubscribe?token=${unsubscribeToken}`,
   ].join("\n");
 }
 
@@ -143,7 +149,7 @@ export async function sendIssue(issue: Issue): Promise<SendReport> {
     headers: {
       // Lets a mail client offer its own unsubscribe button, which people reach
       // for instead of the spam button. Nothing protects deliverability more.
-      "List-Unsubscribe": `<${site.url}/newsletter/unsubscribe?token=${subscriber.token}>`,
+      "List-Unsubscribe": `<${mailOrigin}/newsletter/unsubscribe?token=${subscriber.token}>`,
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
     },
   }));

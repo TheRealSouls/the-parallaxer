@@ -20,6 +20,16 @@ import { site } from "@/lib/site";
  * there are none.
  */
 
+/**
+ * The origin to put in links inside emails.
+ *
+ * Not `site.url`, because a confirmation link is only useful if it points at the
+ * host the reader actually signed up on. BETTER_AUTH_URL already means "the
+ * site's own origin" and is set per environment, so a link mailed from a local
+ * run comes back to the local run instead of the live domain.
+ */
+export const mailOrigin = (process.env.BETTER_AUTH_URL ?? site.url).replace(/\/+$/, "");
+
 const apiKey = process.env.RESEND_API_KEY;
 const from = process.env.MAIL_FROM ?? `${site.name} <onboarding@resend.dev>`;
 

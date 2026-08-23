@@ -2,7 +2,7 @@
 
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
-import { sendMail } from "@/lib/mail";
+import { mailOrigin, sendMail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { site } from "@/lib/site";
 
@@ -57,7 +57,7 @@ export async function subscribe(email: string): Promise<SubscribeResult> {
       `Somebody asked to subscribe this address to ${site.name}.`,
       "",
       "If it was you, confirm here:",
-      `${site.url}/newsletter/confirm?token=${token}`,
+      `${mailOrigin}/newsletter/confirm?token=${token}`,
       "",
       "If it was not you, ignore this message. Nothing will be sent and the",
       "address will be forgotten.",

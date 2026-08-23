@@ -14,7 +14,9 @@ import { mailConfigured } from "@/lib/mail";
  *        -H "authorization: Bearer $CRON_SECRET"
  *
  * Add ?dry=1 to compose the issue and return it without sending, which is how
- * to check what a send would contain before committing to it.
+ * to check what a send would contain before committing to it. A dry run may
+ * also pass &days=N to widen the window, so a first issue can be previewed
+ * against an archive older than a week.
  */
 export async function POST(request: Request) {
   const secret = process.env.CRON_SECRET;
@@ -30,14 +32,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authorised." }, { status: 401 });
   }
 
-  const issue = await buildIssue();
+  const params = new URL(request.url).searchParams;
+  const dry = params.get("dry");
+
+  // Only a dry run may reach further back than the last issue. A real send is
+  // always the window since the last one, so no scheduler misconfiguration can
+  // mail the entire archive to everybody.
+  const days = dry ? Number(params.get("days")) : NaN;
+
+  const issue = await buildIssue(Number.isFinite(days) && days > 0 ? { days } : undefined);
   if (!issue) {
     // Not an error. A quiet week should send nothing rather than a digest of
     // nothing, and the scheduler should not treat that as a failure.
     return NextResponse.json({ status: "nothing to send", articles: 0 });
   }
 
-  const dry = new URL(request.url).searchParams.get("dry");
   if (dry) {
     return NextResponse.json({
       status: "dry run, nothing sent",

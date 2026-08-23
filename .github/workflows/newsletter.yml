@@ -1,0 +1,55 @@
+# Mails the weekly digest.
+#
+# GitHub Actions rather than a Render cron job, because Render bills cron as a
+# separate service and this is one HTTP request a week. The endpoint does all
+# the work; this file only decides when to knock on it.
+#
+# Two repository secrets are required, under Settings, Secrets and variables,
+# Actions:
+#   SITE_URL     https://theparallaxer.com  (no trailing slash)
+#   CRON_SECRET  the same value as CRON_SECRET in the Render environment
+#
+# Note: GitHub disables scheduled workflows on a repository with no pushes for
+# sixty days, and emails you when it does. Re-enable it from the Actions tab.
+
+name: Weekly newsletter
+
+on:
+  schedule:
+    # 09:00 UTC on Sunday. Cron here is always UTC, so this shifts by an hour
+    # across Irish summer time; that is fine for a digest and avoids the
+    # ambiguity of scheduling inside a clock change.
+    - cron: "0 9 * * 0"
+  # Lets you send an issue by hand from the Actions tab, and is the only way to
+  # test this without waiting for Sunday.
+  workflow_dispatch:
+    inputs:
+      dry:
+        description: "Compose the issue and print it without sending"
+        type: boolean
+        default: true
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send the digest
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          DRY: ${{ inputs.dry && '?dry=1' || '' }}
+        run: |
+          if [ -z "$SITE_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "SITE_URL or CRON_SECRET is not set as a repository secret."
+            exit 1
+          fi
+
+          # --fail-with-body so a 401 or 503 fails the run loudly rather than
+          # succeeding with an error message nobody reads.
+          curl --fail-with-body --silent --show-error \
+            -X POST "${SITE_URL}/api/newsletter/send${DRY}" \
+            -H "authorization: Bearer ${CRON_SECRET}" \
+            | tee response.json
+
+          echo
+          echo "Status: $(python3 -c 'import json;print(json.load(open("response.json"))["status"])')"
