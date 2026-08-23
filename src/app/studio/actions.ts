@@ -161,6 +161,52 @@ export async function publishArticle(id: string): Promise<PublishResult> {
   return { ok: true, slug };
 }
 
+/**
+ * Hands a draft to the editors for a decision.
+ *
+ * The step exists so a junior editor or a guest contributor has a way to say
+ * "this is finished" without publishing it themselves. An admin then publishes
+ * or sends it back.
+ */
+export async function submitForReview(id: string): Promise<PublishResult> {
+  const user = await requireEditor();
+
+  const article = await prisma.article.findUnique({ where: { id } });
+  if (!article) return { ok: false, problems: ["That article no longer exists."] };
+  if (!canEditArticle(user, article.authorId)) forbidden();
+  if (article.status === "published") {
+    return { ok: false, problems: ["This is already published."] };
+  }
+
+  // The same completeness bar as publishing. Handing over something unfinished
+  // just moves the work to somebody with less context.
+  const body = sanitiseDoc(article.body);
+  const problems: string[] = [];
+  if (!article.title.trim() || article.title === "Untitled") problems.push("It needs a headline.");
+  if (!article.dek.trim()) problems.push("It needs a standfirst.");
+  if (article.lenses.length === 0) problems.push("Choose at least one lens.");
+  if (body.content.length === 0) problems.push("The body is empty.");
+  if (problems.length) return { ok: false, problems };
+
+  await prisma.article.update({ where: { id }, data: { status: "in_review" } });
+  revalidatePath("/studio");
+  return { ok: true, slug: article.slug };
+}
+
+/** Puts an article back into the writer's hands. */
+export async function returnToDraft(id: string): Promise<void> {
+  const user = await requireEditor();
+  const article = await prisma.article.findUnique({
+    where: { id },
+    select: { authorId: true },
+  });
+  if (!article) return;
+  if (!canEditArticle(user, article.authorId)) forbidden();
+
+  await prisma.article.update({ where: { id }, data: { status: "draft" } });
+  revalidatePath("/studio");
+}
+
 /** Takes a published article off the site without deleting it. */
 export async function archiveArticle(id: string): Promise<void> {
   const user = await requireEditor();

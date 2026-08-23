@@ -6,7 +6,14 @@ import StarterKit from "@tiptap/starter-kit";
 import NextLink from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { setCommentsLocked } from "@/app/actions/engagement";
-import { publishArticle, saveDraft, saveRevision } from "@/app/studio/actions";
+import {
+  archiveArticle,
+  publishArticle,
+  saveDraft,
+  saveRevision,
+  submitForReview,
+  updateSlug,
+} from "@/app/studio/actions";
 import { LensSelector } from "@/components/studio/LensSelector";
 import type { Doc } from "@/lib/content";
 import type { Lens } from "@/lib/lenses";
@@ -38,6 +45,7 @@ type Props = {
     status: string;
     publishedAt: string | null;
     commentsLocked: boolean;
+    canPublishDirectly: boolean;
   };
 };
 
@@ -52,6 +60,9 @@ export function Editor({ id, initial }: Props) {
   const [problems, setProblems] = useState<string[]>([]);
   const [published, setPublished] = useState(initial.status === "published");
   const [locked, setLocked] = useState(initial.commentsLocked);
+  const [status, setStatus] = useState(initial.status);
+  const [slug, setSlug] = useState(initial.slug);
+  const [slugError, setSlugError] = useState<string | null>(null);
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef({ title, kicker, dek, lenses, body: initial.body });
@@ -183,7 +194,13 @@ export function Editor({ id, initial }: Props) {
         <div>
           <p className="label text-ink-muted">Status</p>
           <p className="mt-1 text-base">
-            {published ? "Published" : "Draft"}
+            {published
+              ? "Published"
+              : status === "in_review"
+                ? "With the editors"
+                : status === "archived"
+                  ? "Off the site"
+                  : "Draft"}
             <span className="text-ink-faint block text-sm">
               {saving ? "Saving" : savedAt ? `Saved ${formatTime(savedAt)}` : "Not saved yet"}
             </span>
@@ -216,10 +233,39 @@ export function Editor({ id, initial }: Props) {
         )}
 
         <div>
-          <p className="label text-ink-muted">Address</p>
-          <p className="text-ink-faint mt-1 text-sm break-all">/article/{initial.slug}</p>
-          {initial.publishedAt && (
-            <p className="text-ink-faint mt-1 text-sm">Fixed, because it has been published.</p>
+          <label htmlFor="slug" className="label text-ink-muted block">
+            Address
+          </label>
+
+          {initial.publishedAt ? (
+            <>
+              <p className="text-ink-faint mt-1 text-sm break-all">/article/{slug}</p>
+              <p className="text-ink-faint mt-1 text-sm">
+                Fixed once published, so links people have shared keep working.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="mt-1.5 flex items-baseline gap-1">
+                <span className="text-ink-faint text-sm">/article/</span>
+                <input
+                  id="slug"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  onBlur={async () => {
+                    if (slug === initial.slug) return;
+                    const result = await updateSlug(id, slug);
+                    setSlugError(result.error ?? null);
+                  }}
+                  className="border-rule bg-paper text-ink focus:border-ink min-w-0 flex-1 border px-2 py-1 text-sm outline-none"
+                />
+              </div>
+              {slugError && (
+                <p role="alert" className="mt-1 text-sm">
+                  {slugError}
+                </p>
+              )}
+            </>
           )}
         </div>
 
@@ -235,13 +281,32 @@ export function Editor({ id, initial }: Props) {
         )}
 
         <div className="space-y-3">
-          <button
-            type="button"
-            onClick={onPublish}
-            className="label bg-ink text-paper w-full px-4 py-3 underline-offset-4 hover:underline"
-          >
-            {published ? "Update" : "Publish"}
-          </button>
+          {initial.canPublishDirectly ? (
+            <button
+              type="button"
+              onClick={onPublish}
+              className="label bg-ink text-paper w-full px-4 py-3 underline-offset-4 hover:underline"
+            >
+              {published ? "Update" : "Publish"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={async () => {
+                const result = await submitForReview(id);
+                if (result.ok) {
+                  setProblems([]);
+                  setStatus("in_review");
+                } else {
+                  setProblems(result.problems);
+                }
+              }}
+              disabled={status === "in_review"}
+              className="label bg-ink text-paper w-full px-4 py-3 underline-offset-4 hover:underline disabled:opacity-60"
+            >
+              {status === "in_review" ? "With the editors" : "Submit for review"}
+            </button>
+          )}
 
           <NextLink
             href={`/studio/preview/${id}`}
@@ -252,11 +317,28 @@ export function Editor({ id, initial }: Props) {
 
           {published && (
             <NextLink
-              href={`/article/${initial.slug}`}
+              href={`/article/${slug}`}
               className="label text-ink-muted block text-center underline underline-offset-4"
             >
               View on the site
             </NextLink>
+          )}
+
+          {published && (
+            <button
+              type="button"
+              onClick={async () => {
+                if (!window.confirm("Take this off the site? It keeps its square on the map.")) {
+                  return;
+                }
+                await archiveArticle(id);
+                setPublished(false);
+                setStatus("archived");
+              }}
+              className="label text-ink-muted block w-full text-center underline underline-offset-4"
+            >
+              Take off the site
+            </button>
           )}
         </div>
       </aside>

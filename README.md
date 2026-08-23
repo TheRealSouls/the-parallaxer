@@ -216,6 +216,18 @@ prisma/schema.prisma
 
 Stage 3 adds the Tiptap editing studio. Stage 4 adds comments, likes, and full editor profiles. Stage 5 is SEO, feeds, and the newsletter. Stage 6 is monetisation, which is also when the legal pages need revisiting.
 
+## Seeding
+
+An empty database makes the map, the lens pages and search look broken rather than new. To fill one with the Stage 1 sample archive:
+
+```bash
+npm run seed
+```
+
+Ten articles across all seven regions, with map squares handed out in publication order exactly as the studio would have. It refuses to run against a database that already holds articles, so it cannot quietly duplicate a real archive; `--force` overrides that.
+
+Everything it writes is placeholder, including four invented editors on `@example.invalid` addresses that can never receive mail. Remove them before the site is public.
+
 ## Deploying
 
 `src/generated` is gitignored, because generated code does not belong in version control. Prisma 7 with a custom output path does **not** generate on install by itself, so a fresh checkout has no client until something runs `prisma generate`. Both `postinstall` and `build` run it:
