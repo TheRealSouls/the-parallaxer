@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "newsletter:preview": "node scripts/newsletter-preview.mjs"
   },
   "dependencies": {
     "@fortawesome/free-brands-svg-icons": "^7.3.1",
