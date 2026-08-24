@@ -24,9 +24,23 @@ const GLYPH: Record<SocialKey, { path: string; width: number }> = {
   substack: { path: faSubstack.icon[4] as string, width: faSubstack.icon[0] },
 };
 
-export function SocialLinks({ className = "" }: { className?: string }) {
+export function SocialLinks({
+  className = "",
+  variant = "icons",
+}: {
+  className?: string;
+  /**
+   * "icons" is the footer's row of glyphs, where space is short and the
+   * accessible name carries the meaning. "list" names each platform in the
+   * open, which is what a contact page wants: somebody deciding where to reach
+   * you should not have to identify a logo first.
+   */
+  variant?: "icons" | "list";
+}) {
+  const list = variant === "list";
+
   return (
-    <ul className={`flex items-center gap-5 ${className}`}>
+    <ul className={`${list ? "space-y-2.5" : "flex items-center gap-5"} ${className}`}>
       {socials.map((social) => {
         const glyph = GLYPH[social.key];
         return (
@@ -34,16 +48,22 @@ export function SocialLinks({ className = "" }: { className?: string }) {
             <a
               href={social.url}
               rel="noopener"
-              className="text-ink-muted hover:text-ink inline-block"
+              className={`text-ink-muted hover:text-ink ${
+                list ? "flex items-center gap-2.5 text-base" : "inline-block"
+              }`}
             >
               <svg
                 viewBox={`0 0 ${glyph.width} 512`}
-                className="h-4 w-4 fill-current"
+                className="h-4 w-4 shrink-0 fill-current"
                 aria-hidden="true"
               >
                 <path d={glyph.path} />
               </svg>
-              <span className="sr-only">{social.label}</span>
+              {list ? (
+                <span className="underline-offset-4 hover:underline">{social.label}</span>
+              ) : (
+                <span className="sr-only">{social.label}</span>
+              )}
             </a>
           </li>
         );

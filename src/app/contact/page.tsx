@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContactForm } from "@/components/ContactForm";
+import { SocialLinks } from "@/components/SocialLinks";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -12,12 +13,15 @@ export const metadata: Metadata = {
 /**
  * A question, a correction or a complaint.
  *
- * The form posts to Formspree, which forwards to the enquiries address and
- * needs no mail-receiving code of ours.
+ * Two columns: the form, and every other way of reaching us beside it. Somebody
+ * who would rather use their own mail client should not have to submit a form
+ * to find out an address exists, so the address is in the open from the start.
  *
- * Without FORMSPREE_FORM_ID the form is not rendered at all and the address is
- * shown instead. A form that silently posts nowhere is worse than no form:
- * somebody writes out a real question and it goes in the bin.
+ * The form posts to Formspree, which forwards to the enquiries address and
+ * needs no mail-receiving code of ours. Without FORMSPREE_FORM_ID it is not
+ * rendered at all and the column widens to the address instead. A form that
+ * silently posts nowhere is worse than no form: somebody writes out a real
+ * question and it goes in the bin.
  */
 
 const formId = process.env.FORMSPREE_FORM_ID;
@@ -33,47 +37,65 @@ export default function ContactPage() {
         </p>
       </header>
 
-      <div className="mx-auto mt-10 max-w-(--measure)">
-        {formId ? (
-          <ContactForm formId={formId} enquiriesEmail={site.enquiriesEmail} />
-        ) : (
-          <p className="text-lg leading-relaxed">
-            Write to{" "}
-            <a
-              href={`mailto:${site.enquiriesEmail}`}
-              className="underline decoration-1 underline-offset-4"
-            >
-              {site.enquiriesEmail}
-            </a>{" "}
-            and we will get back to you.
-          </p>
-        )}
-
-        <div className="border-rule mt-10 border-t pt-6">
-          <h2 className="label text-ink-muted">Other ways</h2>
-          {/* Only worth saying when the form is the main route. Without it the
-              address is already the whole page. */}
-          {formId && (
-            <p className="mt-3 text-base leading-relaxed">
-              Prefer your own mail client? Write to{" "}
-              <a
-                href={`mailto:${site.enquiriesEmail}`}
-                className="underline decoration-1 underline-offset-4"
-              >
-                {site.enquiriesEmail}
-              </a>
-              .
-            </p>
+      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-14">
+        <div className="max-w-(--measure) min-w-0">
+          {formId ? (
+            <ContactForm formId={formId} enquiriesEmail={site.enquiriesEmail} />
+          ) : (
+            <>
+              <h2 className="font-display text-2xl font-semibold">Write to us</h2>
+              <p className="mt-3 text-lg leading-relaxed">
+                The form here is not connected yet. In the meantime{" "}
+                <MailLink className="font-medium" /> reaches the same place.
+              </p>
+            </>
           )}
-          <p className="mt-3 text-base leading-relaxed">
-            Pitching an article instead? The{" "}
-            <Link href="/submit" className="underline decoration-1 underline-offset-4">
-              submissions page
-            </Link>{" "}
-            explains what we look for and how long we take.
-          </p>
         </div>
+
+        {/*
+          A rule rather than a box. The design uses hairlines to divide, and a
+          bordered panel floating beside the form would be the one card on the
+          site.
+        */}
+        <aside className="border-rule lg:border-ink border-t pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+          <section>
+            <h2 className="label text-ink-muted">By email</h2>
+            <p className="mt-3">
+              <MailLink className="font-display text-xl" />
+            </p>
+            <p className="text-ink-faint mt-2 text-sm leading-snug">
+              Straight to the editors. We answer most things within a few days.
+            </p>
+          </section>
+
+          <section className="border-rule mt-8 border-t pt-6">
+            <h2 className="label text-ink-muted">Elsewhere</h2>
+            <SocialLinks variant="list" className="mt-3" />
+          </section>
+
+          <section className="border-rule mt-8 border-t pt-6">
+            <h2 className="label text-ink-muted">Writing for us</h2>
+            <p className="mt-3 text-base leading-relaxed">
+              Pitching an article rather than asking a question? The{" "}
+              <Link href="/submit" className="underline decoration-1 underline-offset-4">
+                submissions page
+              </Link>{" "}
+              explains what we look for and how long we take to answer.
+            </p>
+          </section>
+        </aside>
       </div>
     </div>
+  );
+}
+
+function MailLink({ className = "" }: { className?: string }) {
+  return (
+    <a
+      href={`mailto:${site.enquiriesEmail}`}
+      className={`underline decoration-1 underline-offset-4 ${className}`}
+    >
+      {site.enquiriesEmail}
+    </a>
   );
 }
