@@ -62,6 +62,21 @@ export const metadata: Metadata = {
     url: site.url,
   },
   twitter: { card: "summary_large_image" },
+
+  /**
+   * Search engine ownership tokens.
+   *
+   * Only rendered when set, so no empty meta tags ship by default. Prefer
+   * verifying Search Console with a DNS TXT record instead: that covers the
+   * apex, www and every subdomain at once, and survives a change of host. These
+   * are the fallback for when you cannot reach DNS.
+   */
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+    other: process.env.BING_SITE_VERIFICATION
+      ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION }
+      : undefined,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

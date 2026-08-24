@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { ForgotPasswordForm } from "@/components/PasswordResetForms";
 
 export const metadata: Metadata = {
+  // A sign-in form has nothing to offer a search result.
+  robots: { index: false },
   title: "Forgotten password",
   description: "Request a link to set a new password.",
 };

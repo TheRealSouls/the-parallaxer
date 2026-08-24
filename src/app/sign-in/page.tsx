@@ -5,6 +5,8 @@ import { AuthForm } from "@/components/AuthForm";
 import { googleEnabled } from "@/lib/auth";
 
 export const metadata: Metadata = {
+  // A sign-in form has nothing to offer a search result.
+  robots: { index: false },
   title: "Sign in",
   description: "Sign in to comment and to like articles.",
 };
