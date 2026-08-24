@@ -9,7 +9,8 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "seed": "tsx prisma/seed.ts",
-    "newsletter:preview": "node scripts/newsletter-preview.mjs"
+    "newsletter:preview": "node scripts/newsletter-preview.mjs",
+    "unseed": "tsx prisma/unseed.ts"
   },
   "dependencies": {
     "@fortawesome/free-brands-svg-icons": "^7.3.1",
