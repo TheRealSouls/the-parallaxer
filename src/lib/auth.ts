@@ -43,7 +43,22 @@ if (!secret && process.env.NODE_ENV === "production" && !isBuild) {
   throw new Error("BETTER_AUTH_SECRET must be set in production.");
 }
 
-const baseURL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+/**
+ * The origin every link in an authentication email is built from.
+ *
+ * BETTER_AUTH_URL wins where it is set, because a preview deployment has to be
+ * able to point at itself. Where it is not, production falls back to the site's
+ * canonical URL rather than localhost: an unset variable used to mean every
+ * verification email shipped a link to http://localhost:3000, which fails
+ * silently and looks like mail was never sent.
+ *
+ * Worth stating plainly: if this value does not match the host the reader is
+ * actually on, the session cookie is set on the wrong domain and sign-in fails
+ * with no error to show them.
+ */
+const baseURL =
+  process.env.BETTER_AUTH_URL ??
+  (process.env.NODE_ENV === "production" ? site.url : "http://localhost:3000");
 
 export const auth = betterAuth({
   appName: site.name,
