@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ContactForm } from "@/components/ContactForm";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -10,10 +12,8 @@ export const metadata: Metadata = {
 /**
  * A question, a correction or a complaint.
  *
- * Posts straight to Formspree, which forwards to the enquiries address and
- * needs no server of ours. A plain HTML form with a real action, so it works
- * with no script at all and nothing about it can break in a browser we have not
- * tested.
+ * The form posts to Formspree, which forwards to the enquiries address and
+ * needs no mail-receiving code of ours.
  *
  * Without FORMSPREE_FORM_ID the form is not rendered at all and the address is
  * shown instead. A form that silently posts nowhere is worse than no form:
@@ -35,51 +35,7 @@ export default function ContactPage() {
 
       <div className="mx-auto mt-10 max-w-(--measure)">
         {formId ? (
-          <form action={`https://formspree.io/f/${formId}`} method="POST" className="space-y-5">
-            <Field label="Your name" name="name" type="text" autoComplete="name" />
-            <Field
-              label="Your email address"
-              name="email"
-              type="email"
-              autoComplete="email"
-              hint="So we can write back. Nothing else is done with it."
-            />
-
-            <div>
-              <label htmlFor="message" className="label text-ink block">
-                Your message
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                required
-                rows={8}
-                maxLength={4000}
-                className="border-ink bg-paper text-ink mt-1.5 w-full border px-3 py-2.5 text-base outline-none focus:ring-1 focus:ring-current"
-              />
-            </div>
-
-            {/*
-              Bait for the kind of bot that fills in every input it finds. Hidden
-              from readers and from screen readers, so nobody legitimate can put
-              anything in it, and Formspree drops any submission that has.
-            */}
-            <input
-              type="text"
-              name="_gotcha"
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-              className="hidden"
-            />
-
-            <button
-              type="submit"
-              className="label bg-ink text-paper w-full px-4 py-3.5 underline-offset-4 hover:underline"
-            >
-              Send
-            </button>
-          </form>
+          <ContactForm formId={formId} enquiriesEmail={site.enquiriesEmail} />
         ) : (
           <p className="text-lg leading-relaxed">
             Write to{" "}
@@ -111,49 +67,13 @@ export default function ContactPage() {
           )}
           <p className="mt-3 text-base leading-relaxed">
             Pitching an article instead? The{" "}
-            <a href="/submit" className="underline decoration-1 underline-offset-4">
+            <Link href="/submit" className="underline decoration-1 underline-offset-4">
               submissions page
-            </a>{" "}
+            </Link>{" "}
             explains what we look for and how long we take.
           </p>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  name,
-  type,
-  autoComplete,
-  hint,
-}: {
-  label: string;
-  name: string;
-  type: string;
-  autoComplete: string;
-  hint?: string;
-}) {
-  return (
-    <div>
-      <label htmlFor={name} className="label text-ink block">
-        {label}
-      </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        required
-        autoComplete={autoComplete}
-        aria-describedby={hint ? `${name}-hint` : undefined}
-        className="border-ink bg-paper text-ink mt-1.5 w-full border px-3 py-2.5 text-base outline-none focus:ring-1 focus:ring-current"
-      />
-      {hint && (
-        <p id={`${name}-hint`} className="text-ink-faint mt-1.5 text-sm leading-snug">
-          {hint}
-        </p>
-      )}
     </div>
   );
 }
