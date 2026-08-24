@@ -22,6 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${site.url}/about`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${site.url}/submit`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${site.url}/search`, changeFrequency: "weekly", priority: 0.3 },
+    { url: `${site.url}/pixels`, lastModified: latest, changeFrequency: "weekly", priority: 0.7 },
 
     ...LENSES.map((lens) => ({
       url: `${site.url}/lens/${lens}`,

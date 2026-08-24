@@ -16,7 +16,7 @@ import { VennMapCanvas, type MapEntry } from "./VennMapCanvas";
  */
 export function VennMap({
   articles,
-  heading = "The field",
+  heading = "The Pixels",
 }: {
   articles: readonly Article[];
   /** Overridden on a profile, where the map shows one writer's work. */

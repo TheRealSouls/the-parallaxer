@@ -44,6 +44,7 @@ export const nav = [
   { href: "/lens/philosophy", label: "Philosophy" },
   { href: "/lens/politics", label: "Politics" },
   { href: "/lens/economics", label: "Economics" },
+  { href: "/pixels", label: "Pixels" },
   { href: "/about", label: "About" },
   { href: "/search", label: "Search" },
   { href: "/submit", label: "Submit" },
