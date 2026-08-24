@@ -2,7 +2,7 @@
 
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
-import { mailOrigin, sendMail } from "@/lib/mail";
+import { mailFooter, mailOrigin, sendMail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { site } from "@/lib/site";
 
@@ -59,8 +59,11 @@ export async function subscribe(email: string): Promise<SubscribeResult> {
       "If it was you, confirm here:",
       `${mailOrigin}/newsletter/confirm?token=${token}`,
       "",
+      "The link expires when you use it.",
+      "",
       "If it was not you, ignore this message. Nothing will be sent and the",
-      "address will be forgotten.",
+      "address will be forgotten. You will not hear from us again.",
+      mailFooter("You are receiving this once because this address was entered on our subscribe form. You are not subscribed until you use the link above."),
     ].join("\n"),
   });
 

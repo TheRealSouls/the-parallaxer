@@ -30,6 +30,17 @@ import { site } from "@/lib/site";
  */
 export const mailOrigin = (process.env.BETTER_AUTH_URL ?? site.url).replace(/\/+$/, "");
 
+/**
+ * Where replies go.
+ *
+ * The From address is noreply@, which is conventional for automated mail and
+ * which nobody reads. A Reply-To pointing at a real, forwarded mailbox means a
+ * reader who hits reply reaches a person instead of a bounce. Replies are also
+ * one of the strongest positive signals a mailbox provider has, so this helps
+ * the domain's reputation as well as the reader.
+ */
+const replyTo = site.contactEmail;
+
 const apiKey = process.env.RESEND_API_KEY;
 const from = process.env.MAIL_FROM ?? `${site.name} <onboarding@resend.dev>`;
 
@@ -37,6 +48,24 @@ const resend = apiKey ? new Resend(apiKey) : null;
 
 /** Whether mail will actually leave the building, or only reach the console. */
 export const mailConfigured = Boolean(resend);
+
+/**
+ * Closing block on every message.
+ *
+ * Spam filters weigh whether a message identifies who sent it and why it was
+ * sent. Naming the publication, the publisher and the reason costs four lines
+ * and removes the most common reason a legitimate transactional email is
+ * treated as unsolicited.
+ */
+export function mailFooter(reason: string): string {
+  return [
+    "",
+    "".padEnd(58, "-"),
+    `${site.name} - ${site.statement}`,
+    `Published by ${site.publisher.name}, ${site.publisher.jurisdiction}.`,
+    reason,
+  ].join("\n");
+}
 
 export type Mail = {
   to: string;
@@ -70,6 +99,7 @@ export async function sendMail(mail: Mail): Promise<void> {
 
   const { error } = await resend.emails.send({
     from,
+    replyTo,
     to: mail.to,
     subject: mail.subject,
     text: mail.text,
@@ -111,6 +141,7 @@ export async function sendBatch(messages: Mail[]): Promise<BatchResult> {
       const { error } = await resend.batch.send(
         chunk.map((mail) => ({
           from,
+          replyTo,
           to: mail.to,
           subject: mail.subject,
           text: mail.text,

@@ -106,7 +106,14 @@ export function renderIssue(issue: Issue, unsubscribeToken: string): string {
     "",
     `Read everything at ${mailOrigin}`,
     "",
-    "You are receiving this because you confirmed your address.",
+    // Identification and a working one-click opt-out, in that order. Bulk mail
+    // that says who sent it, why it arrived, and how to stop it is the single
+    // biggest difference between a newsletter and a spam report.
+    `${site.name} is published by ${site.publisher.name} in ${site.publisher.jurisdiction}.`,
+    `Questions or replies: ${site.contactEmail}`,
+    "",
+    "You are receiving this because you confirmed this address on our site.",
+    "We never share the list, and there are no tracking pixels in this email.",
     `Unsubscribe in one click: ${mailOrigin}/newsletter/unsubscribe?token=${unsubscribeToken}`,
   ].join("\n");
 }

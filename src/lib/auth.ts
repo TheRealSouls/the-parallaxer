@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/db";
-import { sendMail } from "@/lib/mail";
+import { mailFooter, sendMail } from "@/lib/mail";
 import { SIGNUP_IP_LIMIT, SIGNUP_IP_WINDOW_MINUTES } from "@/lib/engagement-limits";
 import { PASSWORD_MAX, PASSWORD_MIN, validatePassword } from "@/lib/password";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -112,15 +112,20 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendMail({
         to: user.email,
-        subject: `Reset your ${site.name} password`,
+        // Plain and specific. No urgency, no capitals, no "action required":
+        // those are the words filters weigh against a sender.
+        subject: `Reset your password for ${site.name}`,
         text: [
-          `Somebody asked to reset the password for this address at ${site.name}.`,
+          `Somebody asked to reset the password for ${user.email} at ${site.name}.`,
           "",
           "If it was you, open this link:",
           url,
           "",
-          "The link expires in an hour. If it was not you, ignore this message;",
-          "nothing has changed and your password still works.",
+          "The link expires in an hour and can be used once.",
+          "",
+          "If it was not you, ignore this message. Nothing has changed and your",
+          "password still works.",
+          mailFooter("You are receiving this because this address was entered on our sign-in page."),
         ].join("\n"),
       });
     },
@@ -144,14 +149,18 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) => {
       await sendMail({
         to: user.email,
-        subject: `Confirm your email for ${site.name}`,
+        subject: `Confirm your email address for ${site.name}`,
         text: [
-          `Welcome to ${site.name}.`,
+          `Somebody created an account at ${site.name} using ${user.email}.`,
           "",
-          "Confirm this address to finish setting up your account:",
+          "Confirm the address to finish setting it up:",
           url,
           "",
-          "If you did not sign up, ignore this message and no account will be created.",
+          "Until you do, the account cannot be used to sign in.",
+          "",
+          "If it was not you, ignore this message. The account stays unusable and",
+          "the address will not be added to any mailing list.",
+          mailFooter("You are receiving this because this address was entered on our sign-up form."),
         ].join("\n"),
       });
     },
