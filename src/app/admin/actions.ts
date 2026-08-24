@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth-guards";
 import { fromEditorTitle, type EditorRank, type EditorTitle } from "@/lib/editorial";
 import { isRegionCode, type RegionCode } from "@/lib/lenses";
+import { ensureProfileSlug } from "@/lib/profile-slug";
 import { slugify, uniqueSlug } from "@/lib/slug";
 
 /**
@@ -33,6 +34,13 @@ export async function setUserRole(userId: string, role: string) {
   }
 
   await prisma.user.update({ where: { id: userId }, data: { role } });
+
+  // Anybody who can publish needs a profile address, and a role alone is enough
+  // to publish. Without this, promoting somebody to editor without also giving
+  // them a masthead title leaves them with bylines pointing at a UUID and a
+  // profile editor that refuses to save.
+  if (role === "editor" || role === "admin") await ensureProfileSlug(userId);
+
   revalidatePath("/admin");
   return {};
 }

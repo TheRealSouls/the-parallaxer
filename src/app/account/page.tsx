@@ -38,6 +38,23 @@ export default async function AccountPage() {
         {user.rank && <Row term="Masthead">{formatEditorTitle(title)}</Row>}
       </dl>
 
+      {(user.role === "editor" || user.role === "admin") && (
+        <div className="border-rule mx-auto mt-8 max-w-(--measure) border-b pb-8">
+          <h2 className="font-display text-2xl font-semibold">Writing</h2>
+          <p className="text-ink-muted mt-2 text-base leading-relaxed">
+            Drafts, published pieces and the reading figures for each are in the studio.
+          </p>
+          <p className="mt-4">
+            <Link
+              href="/studio"
+              className="label border-ink inline-block border px-4 py-2.5 underline-offset-4 hover:underline"
+            >
+              Open the studio
+            </Link>
+          </p>
+        </div>
+      )}
+
       <div className="mx-auto mt-8 max-w-(--measure) space-y-3 text-base">
         <p>
           <Link href="/account/profile" className="underline underline-offset-2">

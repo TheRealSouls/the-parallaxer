@@ -7,6 +7,7 @@ import { SIGNUP_IP_LIMIT, SIGNUP_IP_WINDOW_MINUTES } from "@/lib/engagement-limi
 import { PASSWORD_MAX, PASSWORD_MIN, validatePassword } from "@/lib/password";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { site } from "@/lib/site";
+import { slugify } from "@/lib/slug";
 
 /**
  * Authentication.
@@ -206,6 +207,11 @@ export const auth = betterAuth({
               ...user,
               role: isAdmin ? "admin" : "reader",
               rank: isAdmin ? "founding" : null,
+              // The founding editor is minted here rather than through the admin
+              // screens, which are the only other place a slug is issued. Without
+              // this the first account can publish but has no profile page, and
+              // its own bylines point at a UUID.
+              slug: isAdmin ? slugify(user.name) : null,
             },
           };
         },
