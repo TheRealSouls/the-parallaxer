@@ -98,7 +98,7 @@ export function VennMap({
           const n = counts.get(region.code) ?? 0;
           return (
             <li key={region.code} className="label text-ink-muted flex items-center gap-1.5">
-              <LensPixel lenses={region.lenses} size="sm" />
+              <LensPixel lenses={region.lenses} size="md" />
               <span>{region.short}</span>
               <span className="text-ink-faint tabular-nums">{n}</span>
             </li>

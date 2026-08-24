@@ -5,10 +5,12 @@ export const site = {
   domain: "theparallaxer.com",
   url: "https://theparallaxer.com",
   /** Used in the masthead, under the wordmark. */
-  statement: "Current affairs read through philosophy, politics, and economics.",
+  statement: "Current affairs read through philosophy, politics and economics.",
   description:
-    "The Parallaxer reads current affairs through three lenses at once: philosophy, politics, and economics. Each article is coloured by the lenses it uses.",
+    "The Parallaxer reads current affairs through three lenses at once: philosophy, politics and economics. Each article is coloured by the lenses it uses.",
   contactEmail: "contact@theparallaxer.com",
+  /** Shown on the contact page and where readers are invited to write in. */
+  enquiriesEmail: "hello@theparallaxer.com",
   submissionFormUrl: "https://forms.gle/AZLaktvd95HBR4G66",
   founded: 2026,
 

@@ -5,8 +5,8 @@ import { REGIONS, toRegionCode } from "@/lib/lenses";
 /**
  * Titles for the search box's suggestion list.
  *
- * Deliberately thin: headline, address, and which region the piece sits in.
- * Enough to recognise an article and go straight to it, and not so much that
+ * Deliberately thin: headline, address and which region the piece sits in.
+ * Enough to recognise an article and go straight to it, but not so much that
  * the endpoint becomes a second way to read the archive.
  *
  * Only published work is reachable, because `searchArticles` reads from the

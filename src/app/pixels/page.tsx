@@ -29,8 +29,8 @@ export default async function PixelsPage() {
         <h1 className="font-display text-4xl font-semibold sm:text-5xl">The Pixels</h1>
         <p className="text-ink-muted mt-3 max-w-(--measure) text-lg leading-relaxed">
           Every article we publish claims one square. Where the square sits depends on which of the
-          three lenses the piece reads through, and its colour is those lenses mixed the way inks
-          mix on paper.
+          three lenses the piece reads through and its colour is those lenses mixed the way inks mix
+          on paper.
         </p>
       </header>
 
@@ -43,9 +43,8 @@ export default async function PixelsPage() {
 
         <p className="mt-3 leading-relaxed">
           The three circles are philosophy, politics and economics. An article that reads through
-          one lens sits in that circle alone. An article that needs two sits where those two
-          overlap, and takes the colour they make together. A piece that needs all three sits in the
-          middle.
+          one lens sits in that circle alone. An article that needs two sits where those two overlap
+          and takes the colour they make together. A piece that needs all three sits in the middle.
         </p>
 
         <p className="mt-3 leading-relaxed">
@@ -57,8 +56,8 @@ export default async function PixelsPage() {
         <ul className="mt-6 space-y-2">
           {LENSES.map((lens) => (
             <li key={lens} className="flex items-baseline gap-2.5">
-              <span className="translate-y-0.5">
-                <LensPixel lenses={[lens]} size="sm" />
+              <span className="translate-y-1">
+                <LensPixel lenses={[lens]} size="lg" />
               </span>
               <Link href={`/lens/${lens}`} className="underline-offset-4 hover:underline">
                 Everything through {lensName(lens).toLowerCase()}
@@ -73,8 +72,8 @@ export default async function PixelsPage() {
         <ul className="mt-4 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
           {DISPLAY_REGIONS.map((region) => (
             <li key={region.code} className="flex items-baseline gap-2.5">
-              <span className="translate-y-0.5">
-                <LensPixel lenses={region.lenses} size="sm" />
+              <span className="translate-y-1">
+                <LensPixel lenses={region.lenses} size="lg" />
               </span>
               <span className="text-base">{region.name}</span>
             </li>

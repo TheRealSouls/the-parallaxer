@@ -43,6 +43,11 @@ export function Footer() {
               </Link>
             </li>
             <li>
+              <Link href="/contact" className="underline-offset-4 hover:underline">
+                Contact
+              </Link>
+            </li>
+            <li>
               <Link href="/submit" className="underline-offset-4 hover:underline">
                 Write for us
               </Link>

@@ -17,7 +17,7 @@ type Params = { searchParams: Promise<{ q?: string; lens?: string }> };
  * Search across the archive.
  *
  * A plain form with a GET action, so a search is a real URL that can be shared,
- * bookmarked, and read by a crawler. No JavaScript is involved on the way in or
+ * bookmarked and read by a crawler. No JavaScript is involved on the way in or
  * on the way out.
  */
 export default async function SearchPage({ searchParams }: Params) {
@@ -86,7 +86,7 @@ export default async function SearchPage({ searchParams }: Params) {
 
           {results.length === 0 ? (
             <p className="text-ink-muted mt-6 max-w-(--measure) text-base leading-relaxed">
-              Nothing matched. Search covers headlines, standfirsts, and bylines rather than the
+              Nothing matched. Search covers headlines, standfirsts and bylines rather than the
               full text of every article, so a broader word usually finds more.
             </p>
           ) : (

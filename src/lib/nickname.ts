@@ -61,7 +61,7 @@ export function validateNickname(raw: string): string | null {
     return `Nicknames are at most ${NICKNAME_MAX} characters.`;
   }
   if (!SHAPE.test(value)) {
-    return "Use letters, numbers, hyphens, and underscores, starting and ending with a letter or number.";
+    return "Use letters, numbers, hyphens and underscores, starting and ending with a letter or number.";
   }
   if (RESERVED.has(value.toLowerCase())) {
     return "That nickname is reserved. Please choose another.";

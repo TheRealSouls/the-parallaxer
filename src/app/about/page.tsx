@@ -37,24 +37,27 @@ export default async function AboutPage() {
       <div className="mx-auto mt-10 max-w-(--measure)">
         <p className="mt-6">
           A parallax is the apparent shift in an object when you view it from a different position.
-          Nothing about the object changes. What changes is where you are standing, and that turns
+          Nothing about the object changes. What changes is where you are standing and that turns
           out to be enough to tell you something you could not otherwise measure.
         </p>
         <p className="mt-6">
           This publication takes that seriously as a method. A housing shortage is a supply problem,
-          a question about who holds power in local government, and an argument about what a home is
+          a question about who holds power in local government and an argument about what a home is
           for. A central bank decision is a technical judgement, a democratic question about who
-          decides, and a claim about whose losses count. Reading any of these through one discipline
+          decides and a claim about whose losses count. Reading any of these through one discipline
           gives a clean answer to the wrong question.
         </p>
 
         <h2 className="mt-12 text-2xl">How the colours work</h2>
         <p className="mt-6">
-          Every article carries one, two, or all three lenses, and its colour is the mix. Philosophy
+          Every article carries one, two or all three lenses and its colour is the mix. Philosophy
           is yellow, politics is red, economics is blue. Where two lenses meet, their inks combine.
-          Where all three meet, the result is near black. The map on the front page arranges every
-          published piece into the region it belongs to, so you can see at a glance where the
-          publication has been paying attention and where it has not.
+          Where all three meet, the result is near black.{" "}
+          <a href="/pixels" className="underline decoration-1 underline-offset-4">
+            The Pixels
+          </a>{" "}
+          arranges every published piece into the region it belongs to, so you can see at a glance
+          where the publication has been paying attention and where it has not.
         </p>
 
         <ul className="divide-rule border-rule mt-8 divide-y border-t border-b">
@@ -70,7 +73,7 @@ export default async function AboutPage() {
         <h2 className="mt-12 text-2xl">The masthead</h2>
         <p className="mt-6">
           The Parallaxer is edited by a small group. There are seven beats, one for each region of
-          the map: the three single lenses, the three pairs, and the centre where all three meet.
+          the map: the three single lenses, the three pairs and the centre where all three meet.
           Each beat has a senior editor, appointed by the publication, and may have junior editors
           writing alongside them.
         </p>
@@ -101,7 +104,7 @@ export default async function AboutPage() {
       <div className="border-rule mx-auto mt-12 max-w-(--measure) border-t pt-6">
         <h2 className="text-2xl">Write for us</h2>
         <p className="mt-4">
-          The Parallaxer accepts guest articles, and actively wants them. If you have an argument
+          The Parallaxer accepts guest articles and actively wants them. If you have an argument
           that needs more than one discipline to make, see the{" "}
           <Link href="/submit" className="underline underline-offset-2">
             submission page

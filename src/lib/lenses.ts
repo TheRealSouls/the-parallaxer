@@ -2,7 +2,7 @@
  * The single source of truth for The Parallaxer colour system.
  *
  * Three lenses behave as subtractive primaries. An article carries one, two, or
- * all three of them, and the resulting region colour is the mix: yellow and red
+ * all three of them and the resulting region colour is the mix: yellow and red
  * give orange, red and blue give aubergine, all three give a near-black ink.
  *
  * The seven colours were generated in OKLCH at near-constant lightness so they
@@ -29,7 +29,7 @@ export type RegionCode = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type Region = {
   code: RegionCode;
   lenses: readonly Lens[];
-  /** Full name, used in prose, page titles, and aria labels. */
+  /** Full name, used in prose, page titles and aria labels. */
   name: string;
   /** Condensed uppercase form for kickers and the map key. */
   short: string;

@@ -12,7 +12,7 @@ const LAST_UPDATED = "19 August 2026";
 
 /**
  * Privacy policy written against what the site will actually do by the end of
- * Stage 4, and no more. It describes no advertising cookies and no third-party
+ * Stage 4 and no more. It describes no advertising cookies and no third-party
  * tracking, because Stages 1 to 5 introduce neither. Revisit before Stage 6 adds
  * any ad network, which will also require a consent banner.
  *
@@ -21,7 +21,7 @@ const LAST_UPDATED = "19 August 2026";
  * legal advice; have it reviewed before the site takes its first account.
  *
  * No postal address is given. Article 13 requires the controller's identity and
- * contact details, which an email address satisfies, and publishing a home
+ * contact details, which an email address satisfies and publishing a home
  * address would be a real risk for a sole operator. Irish e-commerce rules do
  * require a geographic address once the site becomes commercial, so this needs
  * revisiting alongside the terms in Stage 6.
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
 
       <div className="mx-auto mt-10 max-w-(--measure)">
         <p className="mt-6">
-          This policy explains what {site.name} collects, why, and what you can do about it. It is
+          This policy explains what {site.name} collects, why and what you can do about it. It is
           written to be read rather than to be survived.
         </p>
 
@@ -54,27 +54,27 @@ export default function PrivacyPage() {
         <h2 className="mt-12 text-2xl">What we collect</h2>
         <p className="mt-6">
           <strong>If you only read:</strong> our host records standard server logs, including your
-          IP address, the pages requested, and your browser type. These keep the site running and
-          protect it from abuse, and are retained for a short period.
+          IP address, the pages requested and your browser type. These keep the site running and
+          protect it from abuse and are retained for a short period.
         </p>
         <p className="mt-6">
-          <strong>If you create an account:</strong> your email address, your display name, and a
+          <strong>If you create an account:</strong> your email address, your display name and a
           hashed password. If you sign in with Google we receive your name, email address, and
           profile picture from Google. We never receive your Google password.
         </p>
         <p className="mt-6">
           <strong>If you comment or like:</strong> the content of your comment, which articles you
-          liked, and the times of both.
+          liked and the times of both.
         </p>
         <p className="mt-6">
           <strong>If you write for us:</strong> the profile information you choose to publish, such
-          as your biography, portrait, and links to your work elsewhere. This is public by design.
+          as your biography, portrait and links to your work elsewhere. This is public by design.
         </p>
         <p className="mt-6">
           <strong>To stop abuse:</strong> when you sign up or post a comment we store a one-way hash
           of your network address in a counter, so that one machine cannot register dozens of
           accounts or flood a thread. The address itself is never written down, the hash cannot be
-          reversed to recover it, the rows hold nothing else, and they are discarded within the
+          reversed to recover it, the rows hold nothing else and they are discarded within the
           hour. Nothing in that counter can be linked to your account.
         </p>
 
@@ -98,7 +98,7 @@ export default function PrivacyPage() {
         <h2 className="mt-12 text-2xl">Cookies</h2>
         <p className="mt-6">
           We set one cookie, to keep you signed in. It is strictly necessary for the account system
-          to work, so it does not require consent, and it is removed when you sign out. We set no
+          to work, so it does not require consent and it is removed when you sign out. We set no
           advertising or tracking cookies. If that ever changes, this page will change first and we
           will ask for your consent before setting them.
         </p>
@@ -126,7 +126,7 @@ export default function PrivacyPage() {
         <h2 className="mt-12 text-2xl">Your rights</h2>
         <p className="mt-6">
           Under the GDPR you have the right to see the data we hold about you, to correct it, to
-          have it erased, to restrict or object to how we use it, and to receive a copy in a
+          have it erased, to restrict or object to how we use it and to receive a copy in a
           portable form. Write to {site.contactEmail} and we will respond within one month.
         </p>
         <p className="mt-6">
@@ -137,7 +137,7 @@ export default function PrivacyPage() {
 
         <h2 className="mt-12 text-2xl">Children</h2>
         <p className="mt-6">
-          The site is not intended for children, and you must be at least 16 to create an account.
+          The site is not intended for children and you must be at least 16 to create an account.
           We do not knowingly collect data from anyone younger. If you believe a child has given us
           personal data, contact {site.contactEmail} and we will delete it.
         </p>

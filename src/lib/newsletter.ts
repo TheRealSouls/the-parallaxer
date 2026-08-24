@@ -35,7 +35,7 @@ export async function buildIssue(options?: { days?: number }): Promise<Issue | n
     select: { number: true, sentAt: true },
   });
 
-  // `days` widens the window on purpose, and only the dry run passes it. It
+  // `days` widens the window on purpose and only the dry run passes it. It
   // exists so a first issue can be previewed against an archive that is older
   // than a week, which is otherwise impossible to look at before sending one.
   const since =
@@ -64,7 +64,7 @@ export async function buildIssue(options?: { days?: number }): Promise<Issue | n
  * The body of one subscriber's copy.
  *
  * Standfirsts and links only, never the article itself. A newsletter that
- * reprints the piece gives nobody a reason to visit, and the whole point of the
+ * reprints the piece gives nobody a reason to visit and the whole point of the
  * list is to bring people back to the site.
  */
 export function renderIssue(issue: Issue, unsubscribeToken: string): string {
@@ -107,13 +107,13 @@ export function renderIssue(issue: Issue, unsubscribeToken: string): string {
     `Read everything at ${mailOrigin}`,
     "",
     // Identification and a working one-click opt-out, in that order. Bulk mail
-    // that says who sent it, why it arrived, and how to stop it is the single
+    // that says who sent it, why it arrived and how to stop it is the single
     // biggest difference between a newsletter and a spam report.
     `${site.name} is published by ${site.publisher.name} in ${site.publisher.jurisdiction}.`,
     `Questions or replies: ${site.contactEmail}`,
     "",
     "You are receiving this because you confirmed this address on our site.",
-    "We never share the list, and there are no tracking pixels in this email.",
+    "We never share the list and there are no tracking pixels in this email.",
     `Unsubscribe in one click: ${mailOrigin}/newsletter/unsubscribe?token=${unsubscribeToken}`,
   ].join("\n");
 }

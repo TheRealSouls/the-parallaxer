@@ -5,7 +5,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Submit an article",
   description:
-    "The Parallaxer accepts guest articles that read a subject through more than one of philosophy, politics, and economics.",
+    "The Parallaxer accepts guest articles that read a subject through more than one of philosophy, politics and economics.",
 };
 
 export default function SubmitPage() {
@@ -26,7 +26,7 @@ export default function SubmitPage() {
         <p className="mt-6">
           One argument, made properly. A Parallaxer piece takes a subject that is usually handled by
           a single discipline and shows what the other lenses reveal about it. The best submissions
-          have a claim you could disagree with, and they defend it.
+          have a claim you could disagree with and they defend it.
         </p>
 
         <ul className="marker:text-ink-faint mt-6 list-disc space-y-2 pl-6">
@@ -41,13 +41,13 @@ export default function SubmitPage() {
         <ul className="marker:text-ink-faint mt-6 list-disc space-y-2 pl-6">
           <li>Summaries of an existing debate with no position of your own.</li>
           <li>Pieces that use one lens and mention the other two in passing.</li>
-          <li>Anything written primarily to promote a product, service, or campaign.</li>
+          <li>Anything written primarily to promote a product, service or campaign.</li>
         </ul>
 
         <h2 className="mt-12 text-2xl">How it works</h2>
         <p className="mt-6">
           Submissions go through the form below. An editor reads every submission. If we want to run
-          your piece we will come back with edits, and nothing is published without your agreement
+          your piece we will come back with edits and nothing is published without your agreement
           on the final text. You keep copyright in your work and may republish it elsewhere after
           two weeks with an acknowledgement of first publication here.
         </p>
@@ -66,17 +66,17 @@ export default function SubmitPage() {
         <p className="mt-6">
           Every accepted contributor receives a signed certificate recording their publication with{" "}
           {site.name}, issued by the editor who ran the piece. There is a certificate at each level:
-          guest contributor, junior editor, and senior editor.
+          guest contributor, junior editor and senior editor.
         </p>
 
         <h2 className="mt-12 text-2xl">How to join the masthead</h2>
         <p className="mt-6">
-          There is a route from one submission to a title, and it is the same for everyone.
+          There is a route from one submission to a title and it is the same for everyone.
         </p>
         <ol className="marker:text-ink-faint mt-6 list-decimal space-y-3 pl-6">
           <li>
             Your first and second accepted pieces run as guest articles. You get a byline and a
-            profile, and you keep copyright.
+            profile and you keep copyright.
           </li>
           <li>
             Once {MIN_ARTICLES_FOR_JUNIOR} pieces have been published you may apply for a junior
@@ -84,7 +84,7 @@ export default function SubmitPage() {
             directly rather than submitting through this form.
           </li>
           <li>
-            Senior editorships are not applied for. Each of the seven beats has one, and the
+            Senior editorships are not applied for. Each of the seven beats has one and the
             publication appoints it.
           </li>
         </ol>
@@ -93,8 +93,8 @@ export default function SubmitPage() {
           for the work at every level rather than only at the end.
         </p>
         <p className="mt-6">
-          The seven beats match the seven regions of the map on the front page: philosophy,
-          politics, and economics on their own, the three pairs between them, and the centre where
+          The seven beats match the seven regions of the map: philosophy,
+          politics and economics on their own, the three pairs between them and the centre where
           all three meet.
         </p>
 

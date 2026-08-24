@@ -3,6 +3,7 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { ResendVerification } from "@/components/ResendVerification";
 import { useId, useState } from "react";
 import { signIn, signUp } from "@/lib/auth-client";
 import { NICKNAME_MAX, NICKNAME_MIN, validateNickname } from "@/lib/nickname";
@@ -13,7 +14,7 @@ import { PASSWORD_HINT, validatePassword } from "@/lib/password";
  *
  * One component for both, because they differ by one field and one call. Google
  * is deliberately absent: `googleEnabled` is false while the publication runs on
- * email alone, and the server passes it down so a button never appears before
+ * email alone and the server passes it down so a button never appears before
  * the credentials behind it exist.
  *
  * Signing up ends on a "check your email" panel rather than a redirect, because
@@ -38,10 +39,13 @@ export function AuthForm({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  /** The account exists but cannot be used yet, so offer the link again. */
+  const [stranded, setStranded] = useState(false);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
+    setStranded(false);
 
     if (mode === "sign-up") {
       const problem = validateNickname(nickname) ?? validatePassword(password);
@@ -69,6 +73,12 @@ export function AuthForm({
 
     if (result.error) {
       setError(readableError(result.error.message, result.error.status));
+      // Both of these leave an account that exists but cannot be used and the
+      // way out of either is the same link. Offering it here saves the reader
+      // guessing which of the two states they are in.
+      setStranded(
+        isUnverified(result.error.message, result.error.status) || isTaken(result.error.message),
+      );
       return;
     }
 
@@ -86,12 +96,13 @@ export function AuthForm({
       <div className="border-ink mx-auto w-full max-w-sm border-t-2 pt-6">
         <h2 className="font-display text-2xl font-semibold">Check your email</h2>
         <p className="text-ink-muted mt-3 text-base leading-relaxed">
-          We have sent a confirmation link to <strong>{email}</strong>. Open it and your account is
-          ready. The link expires in an hour.
+          There is a confirmation link on its way to <strong>{email}</strong>. Open it and the
+          account is ready. The link lasts an hour.
         </p>
         <p className="text-ink-muted mt-3 text-base leading-relaxed">
-          Nothing arrived? Check the spam folder before trying again.
+          Nothing arrived? Look in spam first. It usually turns up there.
         </p>
+        <ResendVerification email={email} className="mt-3" />
       </div>
     );
   }
@@ -121,12 +132,12 @@ export function AuthForm({
             // Not "username": browsers and password managers treat that as the
             // login identifier and fill it with the email address, which is
             // exactly what a nickname must not be. "nickname" is the spec token
-            // for this field, and the data-* opt-outs cover the managers that
+            // for this field and the data-* opt-outs cover the managers that
             // ignore it and fill the first text input regardless.
             autoComplete="nickname"
             ignoreManagers
             maxLength={NICKNAME_MAX}
-            hint={`${NICKNAME_MIN} to ${NICKNAME_MAX} characters. Use letters, numbers, hyphens, and underscores, starting and ending with a letter or number. This is how you appear on the site, and it cannot be changed later.`}
+            hint={`${NICKNAME_MIN} to ${NICKNAME_MAX} characters. Use letters, numbers, hyphens and underscores, starting and ending with a letter or number. This is how you appear on the site and it cannot be changed later.`}
           />
         )}
 
@@ -158,9 +169,10 @@ export function AuthForm({
         )}
 
         {error && (
-          <p role="alert" className="border-rule border-t pt-3 text-base">
-            {error}
-          </p>
+          <div role="alert" className="border-rule border-t pt-3">
+            <p className="text-base">{error}</p>
+            {stranded && <ResendVerification email={email} className="mt-2" />}
+          </div>
         )}
 
         <button
@@ -200,16 +212,24 @@ export function AuthForm({
   );
 }
 
+function isTaken(message: string | undefined): boolean {
+  return /exists|unique|taken/i.test(message ?? "");
+}
+
+function isUnverified(message: string | undefined, status: number | undefined): boolean {
+  return status === 403 || /verif/i.test(message ?? "");
+}
+
 /** Turns Better Auth's terse messages into something a reader can act on. */
 function readableError(message: string | undefined, status: number | undefined): string {
   if (status === 401 || /invalid|credential/i.test(message ?? "")) {
     return "That email address and password do not match an account.";
   }
-  if (/exists|unique|taken/i.test(message ?? "")) {
-    return "That email address or nickname is already taken.";
+  if (isTaken(message)) {
+    return "There is already an account on that email address or nickname.";
   }
-  if (status === 403 || /verif/i.test(message ?? "")) {
-    return "Confirm your email address before logging in. Check your inbox for the link.";
+  if (isUnverified(message, status)) {
+    return "This account still needs its email address confirmed.";
   }
   return message ?? "That did not work. Please try again.";
 }

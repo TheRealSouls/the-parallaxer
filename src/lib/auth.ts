@@ -138,7 +138,7 @@ export const auth = betterAuth({
      *
      * Without this, an account whose first verification email went astray is
      * stranded: signing up again is refused because the account exists, and
-     * signing in is refused because the address is unverified, and neither path
+     * signing in is refused because the address is unverified and neither path
      * sends a new link. Better Auth defaults this to false, which is a locked
      * door with no handle on either side.
      */
@@ -176,7 +176,7 @@ export const auth = betterAuth({
    * Everything except the nickname is marked non-inputtable, so a crafted
    * sign-up request cannot set its own role, which would be a straightforward
    * privilege escalation. The nickname has to be inputtable because the reader
-   * chooses it, and it is validated before it reaches this point.
+   * chooses it and it is validated before it reaches this point.
    */
   user: {
     additionalFields: {

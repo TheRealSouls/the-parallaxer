@@ -10,7 +10,7 @@ type Link = { label: string; url: string };
  * The public half of an account: the biography and the links that appear under
  * a byline.
  *
- * No nickname field, because a nickname is fixed once chosen, and no portrait
+ * No nickname field, because a nickname is fixed once chosen and no portrait
  * upload, because portraits are files dropped into public/editors for now. A
  * disabled control for each would imply both are closer than they are.
  */
@@ -76,7 +76,7 @@ export function ProfileForm({
       <fieldset className="border-rule mt-8 border-t pt-5">
         <legend className="label text-ink px-0">Links</legend>
         <p className="text-ink-faint mt-1 text-sm">
-          Your own site, Substack, X, LinkedIn, or an academic profile. At most {LINKS_MAX}. These
+          Your own site, Substack, X, LinkedIn or an academic profile. At most {LINKS_MAX}. These
           carry a nofollow attribute, so they pass no search ranking.
         </p>
 
