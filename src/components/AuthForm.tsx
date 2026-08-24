@@ -118,7 +118,13 @@ export function AuthForm({
             type="text"
             value={nickname}
             onChange={setNickname}
-            autoComplete="username"
+            // Not "username": browsers and password managers treat that as the
+            // login identifier and fill it with the email address, which is
+            // exactly what a nickname must not be. "nickname" is the spec token
+            // for this field, and the data-* opt-outs cover the managers that
+            // ignore it and fill the first text input regardless.
+            autoComplete="nickname"
+            ignoreManagers
             maxLength={NICKNAME_MAX}
             hint={`${NICKNAME_MIN} to ${NICKNAME_MAX} characters. Use letters, numbers, hyphens, and underscores, starting and ending with a letter or number. This is how you appear on the site, and it cannot be changed later.`}
           />
@@ -216,6 +222,7 @@ function Field({
   autoComplete,
   hint,
   maxLength,
+  ignoreManagers = false,
 }: {
   label: string;
   type: string;
@@ -224,6 +231,8 @@ function Field({
   autoComplete: string;
   hint?: string;
   maxLength?: number;
+  /** Ask password managers to leave this field alone. See the nickname field. */
+  ignoreManagers?: boolean;
 }) {
   const id = useId();
   return (
@@ -238,6 +247,9 @@ function Field({
         value={value}
         maxLength={maxLength}
         autoComplete={autoComplete}
+        data-1p-ignore={ignoreManagers || undefined}
+        data-lpignore={ignoreManagers ? "true" : undefined}
+        data-bwignore={ignoreManagers || undefined}
         onChange={(event) => onChange(event.target.value)}
         aria-describedby={hint ? `${id}-hint` : undefined}
         className="border-ink bg-paper text-ink mt-1.5 w-full border px-3 py-2.5 text-base outline-none focus:ring-1 focus:ring-current"

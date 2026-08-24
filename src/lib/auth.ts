@@ -4,7 +4,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
 import { SIGNUP_IP_LIMIT, SIGNUP_IP_WINDOW_MINUTES } from "@/lib/engagement-limits";
-import { PASSWORD_MIN, validatePassword } from "@/lib/password";
+import { PASSWORD_MAX, PASSWORD_MIN, validatePassword } from "@/lib/password";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { site } from "@/lib/site";
 
@@ -89,6 +89,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: PASSWORD_MIN,
+    maxPasswordLength: PASSWORD_MAX,
 
     // An account can be created but not used until the address is confirmed.
     requireEmailVerification: true,
@@ -112,6 +113,16 @@ export const auth = betterAuth({
 
   emailVerification: {
     sendOnSignUp: true,
+    /**
+     * Also send on sign-in, when the address is still unconfirmed.
+     *
+     * Without this, an account whose first verification email went astray is
+     * stranded: signing up again is refused because the account exists, and
+     * signing in is refused because the address is unverified, and neither path
+     * sends a new link. Better Auth defaults this to false, which is a locked
+     * door with no handle on either side.
+     */
+    sendOnSignIn: true,
     // Signing somebody in the moment they click the link saves a second step,
     // and the click already proves they hold the address.
     autoSignInAfterVerification: true,
