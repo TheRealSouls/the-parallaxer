@@ -112,6 +112,29 @@ export async function saveRevision(articleId: string): Promise<void> {
 
 export type PublishResult = { ok: true; slug: string } | { ok: false; problems: string[] };
 
+
+/**
+ * Everything whose contents change when an article appears or disappears.
+ *
+ * The front page and the article itself are the obvious pair, but a piece also
+ * joins a lens archive, its author's profile, the sitemap and both feeds. Miss
+ * those and a newly published article is absent from the sitemap you handed to
+ * Google, which is the one place it most needs to be.
+ */
+function revalidateArticleSurfaces(article: {
+  slug: string;
+  lenses: readonly string[];
+  authorSlug: string | null;
+}): void {
+  revalidatePath("/");
+  revalidatePath(`/article/${article.slug}`);
+  for (const lens of article.lenses) revalidatePath(`/lens/${lens}`);
+  if (article.authorSlug) revalidatePath(`/by/${article.authorSlug}`);
+  revalidatePath("/sitemap.xml");
+  revalidatePath("/feed.xml");
+  revalidatePath("/atom.xml");
+}
+
 /**
  * Publishes, assigning the article its square on the map.
  *
@@ -122,7 +145,10 @@ export type PublishResult = { ok: true; slug: string } | { ok: false; problems: 
 export async function publishArticle(id: string): Promise<PublishResult> {
   const user = await requireEditor();
 
-  const article = await prisma.article.findUnique({ where: { id } });
+  const article = await prisma.article.findUnique({
+    where: { id },
+    include: { author: { select: { slug: true } } },
+  });
   if (!article) return { ok: false, problems: ["That article no longer exists."] };
   if (!canEditArticle(user, article.authorId)) forbidden();
 
@@ -156,8 +182,11 @@ export async function publishArticle(id: string): Promise<PublishResult> {
     },
   });
 
-  revalidatePath("/");
-  revalidatePath(`/article/${slug}`);
+  revalidateArticleSurfaces({
+    slug,
+    lenses: article.lenses,
+    authorSlug: article.author.slug,
+  });
   return { ok: true, slug };
 }
 
@@ -213,7 +242,7 @@ export async function archiveArticle(id: string): Promise<void> {
 
   const article = await prisma.article.findUnique({
     where: { id },
-    select: { authorId: true, slug: true },
+    select: { authorId: true, slug: true, lenses: true, author: { select: { slug: true } } },
   });
   if (!article) return;
   if (!canEditArticle(user, article.authorId)) forbidden();
@@ -222,8 +251,11 @@ export async function archiveArticle(id: string): Promise<void> {
   // puts it back where readers last saw it.
   await prisma.article.update({ where: { id }, data: { status: "archived" } });
 
-  revalidatePath("/");
-  revalidatePath(`/article/${article.slug}`);
+  revalidateArticleSurfaces({
+    slug: article.slug,
+    lenses: article.lenses,
+    authorSlug: article.author.slug,
+  });
 }
 
 /** Puts an earlier revision back into the editor as the current body. */
